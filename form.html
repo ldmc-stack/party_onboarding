@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0F6E56">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Party Visit">
+<link rel="manifest" href="manifest.json">
+<title>Party Visit</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:#FBFAF7;color:#1a1a1a;min-height:100vh;padding-bottom:100px}
+.header{background:#0F6E56;color:#fff;padding:14px 16px 12px;position:sticky;top:0;z-index:100}
+.header-top{display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:16px;font-weight:500}
+.header-badges{display:flex;gap:6px;align-items:center}
+.badge{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500}
+.badge-gps{background:rgba(255,255,255,0.2);color:#fff}
+.badge-gps.locked{background:#1D9E75}
+.badge-offline{background:#E24B4A;color:#fff;display:none}
+.badge-queue{background:#EF9F27;color:#854F0B;display:none}
+.agent-bar{margin-top:8px;font-size:12px;opacity:0.85;display:flex;align-items:center;gap:6px}
+.agent-bar span{background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;cursor:pointer}
+
+.section{background:#fff;margin:12px;border-radius:12px;border:0.5px solid #E5E3DC;overflow:hidden}
+.section-title{font-size:11px;font-weight:500;color:#73726C;text-transform:uppercase;letter-spacing:0.5px;padding:12px 16px 8px;border-bottom:0.5px solid #F1EFE8}
+.field{padding:12px 16px;border-bottom:0.5px solid #F1EFE8}
+.field:last-child{border-bottom:none}
+.field label{font-size:12px;color:#73726C;display:block;margin-bottom:6px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;background:#F8F7F4;border:0.5px solid #E5E3DC;border-radius:8px;padding:10px 12px;font-size:14px;color:#1a1a1a;font-family:inherit;outline:none;-webkit-appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#0F6E56;background:#fff}
+.field textarea{height:72px;resize:none}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2373726C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.field input[disabled],.field select[disabled]{opacity:0.5;cursor:not-allowed}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:8px 14px;border-radius:8px;border:1px solid #E5E3DC;background:#fff;font-size:13px;color:#5F5E5A;cursor:pointer;transition:all 0.15s;user-select:none}
+.chip:active{transform:scale(0.97)}
+.chip.selected-onboarded{background:#0F6E56;border-color:#0F6E56;color:#fff}
+.chip.selected-open{background:#BA7517;border-color:#BA7517;color:#fff}
+.chip.selected-closed{background:#5F5E5A;border-color:#5F5E5A;color:#fff}
+.chip.selected-doesnt{background:#A32D2D;border-color:#A32D2D;color:#fff}
+.chip.selected-new,.chip.selected-existing,.chip.selected-type{background:#0F6E56;border-color:#0F6E56;color:#fff}
+.chip.selected-dhq,.chip.selected-p1,.chip.selected-p2{background:#0F6E56;border-color:#0F6E56;color:#fff}
+
+.photo-area{padding:12px 16px}
+.photo-label{font-size:12px;color:#73726C;font-weight:500;margin-bottom:8px}
+.photo-btn{width:100%;background:#F8F7F4;border:1.5px dashed #B4B2A9;border-radius:10px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;color:#73726C;font-size:13px}
+.photo-btn svg{opacity:0.6}
+.photo-preview{width:100%;border-radius:10px;overflow:hidden;display:none}
+.photo-preview img{width:100%;height:180px;object-fit:cover;display:block}
+.photo-retake{width:100%;margin-top:6px;background:#fff;border:0.5px solid #E5E3DC;border-radius:8px;padding:8px;font-size:12px;color:#73726C;cursor:pointer;text-align:center}
+#photoInput{display:none}
+
+.submit-wrap{position:fixed;bottom:0;left:0;right:0;padding:12px 16px;background:#FBFAF7;border-top:0.5px solid #E5E3DC}
+.submit-btn{width:100%;background:#0F6E56;color:#fff;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:500;font-family:inherit;cursor:pointer;transition:opacity 0.2s}
+.submit-btn:active{opacity:0.85}
+.submit-btn:disabled{opacity:0.6;cursor:not-allowed}
+.submit-btn.loading::after{content:'...';animation:dots 1s infinite}
+
+.toast{position:fixed;top:80px;left:16px;right:16px;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;z-index:200;display:none;text-align:center}
+.toast.success{background:#E5F4ED;color:#0F6E56;border:1px solid #1D9E75}
+.toast.error{background:#FCEBEB;color:#A32D2D;border:1px solid #E24B4A}
+.toast.info{background:#E6F1FB;color:#185FA5;border:1px solid #378ADD}
+
+.hidden{display:none!important}
+.req{color:#E24B4A}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:flex;align-items:flex-end}
+.modal{background:#fff;border-radius:16px 16px 0 0;padding:24px 20px 36px;width:100%}
+.modal h3{font-size:16px;font-weight:500;margin-bottom:6px}
+.modal p{font-size:13px;color:#73726C;margin-bottom:16px}
+.modal input{width:100%;background:#F8F7F4;border:0.5px solid #E5E3DC;border-radius:10px;padding:12px;font-size:15px;font-family:inherit;outline:none;margin-bottom:12px}
+.modal input:focus{border-color:#0F6E56}
+.modal-btn{width:100%;background:#0F6E56;color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:500;font-family:inherit;cursor:pointer}
+
+@keyframes dots{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>Party Visit</h1>
+    <div class="header-badges">
+      <span class="badge badge-gps" id="gpsStatus">GPS...</span>
+      <span class="badge badge-offline" id="offlineBadge">Offline</span>
+      <span class="badge badge-queue" id="queueBadge">0 queued</span>
+    </div>
+  </div>
+  <div class="agent-bar">
+    Submitting as: <span id="agentDisplay" onclick="changeAgent()">—</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- PARTY INFO -->
+<div class="section">
+  <div class="section-title">Party info</div>
+  <div class="field">
+    <label>Party name <span class="req">*</span></label>
+    <input type="text" id="party_name" placeholder="e.g. Sharma General Stores" autocomplete="off">
+  </div>
+  <div class="field">
+    <label>Party type <span class="req">*</span></label>
+    <div class="chips" id="chips_party_type">
+      <div class="chip" onclick="selectChip('party_type','New',this)">New</div>
+      <div class="chip" onclick="selectChip('party_type','Existing',this)">Existing</div>
+    </div>
+  </div>
+  <div class="field hidden" id="field_rtr_id">
+    <label>RTR / Party ID</label>
+    <input type="text" id="rtr_id" placeholder="Existing party ID" autocomplete="off">
+  </div>
+</div>
+
+<!-- STATUS -->
+<div class="section">
+  <div class="section-title">Visit status <span class="req">*</span></div>
+  <div class="field">
+    <div class="chips" id="chips_status">
+      <div class="chip" onclick="selectChip('status','Onboarded',this)">Onboarded</div>
+      <div class="chip" onclick="selectChip('status','Open',this)">Open</div>
+      <div class="chip" onclick="selectChip('status','Closed',this)">Closed</div>
+      <div class="chip" onclick="selectChip('status',&quot;Doesn't Exist&quot;,this)">Doesn't Exist</div>
+    </div>
+  </div>
+</div>
+
+<!-- OWNER INFO -->
+<div class="section" id="section_owner">
+  <div class="section-title">Owner info</div>
+  <div class="field">
+    <label>Owner name</label>
+    <input type="text" id="owner_name" placeholder="Owner / proprietor name" autocomplete="off">
+  </div>
+  <div class="field">
+    <label>Phone</label>
+    <input type="tel" id="phone" placeholder="10-digit mobile number" maxlength="10" autocomplete="off">
+  </div>
+</div>
+
+<!-- LOCATION -->
+<div class="section">
+  <div class="section-title">Location <span class="req">*</span></div>
+  <div class="field">
+    <label>State</label>
+    <select id="state" onchange="onStateChange()">
+      <option value="">Select state</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>District</label>
+    <select id="district" onchange="onDistrictChange()" disabled>
+      <option value="">Select district</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Tehsil</label>
+    <select id="tehsil" onchange="onTehsilChange()" disabled>
+      <option value="">Select tehsil</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Town</label>
+    <select id="town" onchange="onTownChange()" disabled>
+      <option value="">Select town</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Village type</label>
+    <div class="chips" id="chips_village_type">
+      <div class="chip" onclick="selectChip('village_type','DHQ',this)">DHQ</div>
+      <div class="chip" onclick="selectChip('village_type','P1',this)">P1</div>
+      <div class="chip" onclick="selectChip('village_type','P2',this)">P2</div>
+    </div>
+  </div>
+</div>
+
+<!-- SALES & DETAILS -->
+<div class="section">
+  <div class="section-title">Sales details</div>
+  <div class="field">
+    <label>Sales team <span class="req">*</span></label>
+    <select id="sales_team">
+      <option value="">Select team</option>
+      <option>Team Alpha</option>
+      <option>Team Bravo</option>
+      <option>Team Charlie</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Outlet universe (est.)</label>
+    <input type="number" id="estimated_outlet_universe" placeholder="Estimated outlets in area" min="0">
+  </div>
+  <div class="field hidden" id="field_activation_date">
+    <label>Activation date</label>
+    <input type="date" id="estimated_activation_date">
+  </div>
+</div>
+
+<!-- PHOTO -->
+<div class="section">
+  <div class="section-title">Outlet photo</div>
+  <div class="photo-area">
+    <div class="photo-btn" id="photoBtnArea" onclick="document.getElementById('photoInput').click()">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <span>Tap to take photo</span>
+      <span style="font-size:11px;opacity:0.7">Opens camera</span>
+    </div>
+    <div class="photo-preview" id="photoPreview">
+      <img id="photoPreviewImg" src="" alt="Outlet photo">
+      <div class="photo-retake" onclick="document.getElementById('photoInput').click()">Retake photo</div>
+    </div>
+    <input type="file" id="photoInput" accept="image/*" capture="environment" onchange="onPhotoCapture(event)">
+  </div>
+</div>
+
+<!-- REMARKS -->
+<div class="section">
+  <div class="section-title">Remarks</div>
+  <div class="field">
+    <textarea id="remarks" placeholder="Any additional notes..."></textarea>
+  </div>
+</div>
+
+<div class="submit-wrap">
+  <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">Submit visit</button>
+</div>
+
+<!-- AGENT NAME MODAL -->
+<div class="modal-overlay" id="agentModal">
+  <div class="modal">
+    <h3>Who are you?</h3>
+    <p>Enter your name. This is saved on your phone and won't be asked again.</p>
+    <input type="text" id="agentNameInput" placeholder="Your full name" autocomplete="name">
+    <button class="modal-btn" onclick="saveAgentName()">Start submitting</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://tzejrlkclshjofqgcsrw.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWpybGtjbHNoam9mcWdjc3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDgwMjAsImV4cCI6MjA5NjU4NDAyMH0.vxlWh1-ptyTKJCaaluPFX1hJ1UlqFnumBD075Nfh100'
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+let gpsCoords = null
+let photoBlob = null
+let locData = []
+let formState = { party_type: null, status: null, village_type: null }
+
+// === GPS ===
+function startGPS() {
+  if (!navigator.geolocation) return
+  navigator.geolocation.watchPosition(pos => {
+    gpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+    const el = document.getElementById('gpsStatus')
+    el.textContent = 'GPS locked'
+    el.classList.add('locked')
+  }, () => {
+    document.getElementById('gpsStatus').textContent = 'No GPS'
+  }, { enableHighAccuracy: true, maximumAge: 30000 })
+}
+
+// === AGENT ===
+function getAgent() { return localStorage.getItem('agentName') }
+function saveAgentName() {
+  const name = document.getElementById('agentNameInput').value.trim()
+  if (!name) { showToast('error', 'Please enter your name'); return }
+  localStorage.setItem('agentName', name)
+  document.getElementById('agentModal').style.display = 'none'
+  document.getElementById('agentDisplay').textContent = name
+}
+function changeAgent() {
+  document.getElementById('agentNameInput').value = getAgent() || ''
+  document.getElementById('agentModal').style.display = 'flex'
+}
+
+// === CHIP SELECT ===
+function selectChip(field, value, el) {
+  formState[field] = value
+  const container = document.getElementById('chips_' + field)
+  container.querySelectorAll('.chip').forEach(c => {
+    c.className = 'chip'
+  })
+  const cls = value === 'Onboarded' ? 'selected-onboarded'
+    : value === 'Open' ? 'selected-open'
+    : value === 'Closed' ? 'selected-closed'
+    : value === "Doesn't Exist" ? 'selected-doesnt'
+    : 'selected-type'
+  el.classList.add(cls)
+  toggleConditional()
+}
+
+function toggleConditional() {
+  const s = formState.status
+  const pt = formState.party_type
+
+  // RTR ID only for existing parties
+  document.getElementById('field_rtr_id').classList.toggle('hidden', pt !== 'Existing')
+
+  // Owner section - show for Onboarded and Open
+  const showOwner = s === 'Onboarded' || s === 'Open'
+  document.getElementById('section_owner').classList.toggle('hidden', !showOwner)
+
+  // Activation date only for Onboarded
+  document.getElementById('field_activation_date').classList.toggle('hidden', s !== 'Onboarded')
+}
+
+// === LOCATIONS CASCADE ===
+async function loadLocations() {
+  const { data, error } = await sb.from('locations').select('*').order('state').order('district').order('tehsil').order('town')
+  if (error) { console.error('Locations load error', error); return }
+  locData = data || []
+  const states = [...new Set(locData.map(r => r.state))].sort()
+  const sel = document.getElementById('state')
+  states.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o) })
+}
+
+function onStateChange() {
+  const state = document.getElementById('state').value
+  const districts = [...new Set(locData.filter(r => r.state === state).map(r => r.district))].sort()
+  populateSelect('district', districts, 'Select district')
+  populateSelect('tehsil', [], 'Select tehsil')
+  populateSelect('town', [], 'Select town')
+  document.getElementById('district').disabled = !state
+  document.getElementById('tehsil').disabled = true
+  document.getElementById('town').disabled = true
+}
+
+function onDistrictChange() {
+  const state = document.getElementById('state').value
+  const district = document.getElementById('district').value
+  const tehsils = [...new Set(locData.filter(r => r.state === state && r.district === district).map(r => r.tehsil))].sort()
+  populateSelect('tehsil', tehsils, 'Select tehsil')
+  populateSelect('town', [], 'Select town')
+  document.getElementById('tehsil').disabled = !district
+  document.getElementById('town').disabled = true
+}
+
+function onTehsilChange() {
+  const state = document.getElementById('state').value
+  const district = document.getElementById('district').value
+  const tehsil = document.getElementById('tehsil').value
+  const towns = [...new Set(locData.filter(r => r.state === state && r.district === district && r.tehsil === tehsil).map(r => r.town))].sort()
+  populateSelect('town', towns, 'Select town')
+  document.getElementById('town').disabled = !tehsil
+}
+
+function onTownChange() {
+  const state = document.getElementById('state').value
+  const district = document.getElementById('district').value
+  const tehsil = document.getElementById('tehsil').value
+  const town = document.getElementById('town').value
+  // Auto-set village type from locations data
+  const match = locData.find(r => r.state === state && r.district === district && r.tehsil === tehsil && r.town === town)
+  if (match && match.village_type) {
+    formState.village_type = match.village_type
+    document.querySelectorAll('#chips_village_type .chip').forEach(c => {
+      c.className = 'chip'
+      if (c.textContent === match.village_type) c.classList.add('selected-type')
+    })
+  }
+}
+
+function populateSelect(id, options, placeholder) {
+  const sel = document.getElementById(id)
+  sel.innerHTML = `<option value="">${placeholder}</option>`
+  options.forEach(o => { const opt = document.createElement('option'); opt.value = o; opt.textContent = o; sel.appendChild(opt) })
+}
+
+// === PHOTO ===
+function onPhotoCapture(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  compressPhoto(file, blob => {
+    photoBlob = blob
+    const url = URL.createObjectURL(blob)
+    document.getElementById('photoPreviewImg').src = url
+    document.getElementById('photoPreview').style.display = 'block'
+    document.getElementById('photoBtnArea').style.display = 'none'
+  })
+}
+
+function compressPhoto(file, callback) {
+  const reader = new FileReader()
+  reader.onload = e => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const MAX = 1200
+      let w = img.width, h = img.height
+      if (w > MAX) { h = h * MAX / w; w = MAX }
+      if (h > MAX) { w = w * MAX / h; h = MAX }
+      canvas.width = w; canvas.height = h
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+      canvas.toBlob(callback, 'image/jpeg', 0.8)
+    }
+    img.src = e.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
+// === OFFLINE QUEUE ===
+function getQueue() { return JSON.parse(localStorage.getItem('pendingQueue') || '[]') }
+function saveQueue(q) { localStorage.setItem('pendingQueue', JSON.stringify(q)) }
+function updateQueueBadge() {
+  const q = getQueue()
+  const el = document.getElementById('queueBadge')
+  if (q.length > 0) { el.style.display = 'inline'; el.textContent = q.length + ' queued' }
+  else el.style.display = 'none'
+}
+
+async function flushQueue() {
+  if (!navigator.onLine) return
+  const q = getQueue()
+  if (q.length === 0) return
+  const remaining = []
+  for (const item of q) {
+    try {
+      await sb.from('submissions').insert(item)
+    } catch(e) {
+      remaining.push(item)
+    }
+  }
+  saveQueue(remaining)
+  updateQueueBadge()
+  if (remaining.length < q.length) showToast('success', `${q.length - remaining.length} queued submission(s) synced`)
+}
+
+// === SUBMIT ===
+async function handleSubmit() {
+  const agentName = getAgent()
+  if (!agentName) { changeAgent(); return }
+
+  // Validate required
+  const partyName = document.getElementById('party_name').value.trim()
+  if (!partyName) { showToast('error', 'Party name is required'); return }
+  if (!formState.status) { showToast('error', 'Select a visit status'); return }
+  if (!formState.party_type) { showToast('error', 'Select party type'); return }
+  if (!document.getElementById('state').value) { showToast('error', 'Select a state'); return }
+  if (!document.getElementById('sales_team').value) { showToast('error', 'Select a sales team'); return }
+
+  const btn = document.getElementById('submitBtn')
+  btn.disabled = true
+  btn.textContent = 'Submitting'
+  btn.classList.add('loading')
+
+  try {
+    let photoUrl = null
+    if (photoBlob) {
+      const fileName = `submissions/${Date.now()}_${agentName.replace(/\s/g,'_')}.jpg`
+      const { data: uploadData, error: uploadError } = await sb.storage.from('party-photos').upload(fileName, photoBlob, { contentType: 'image/jpeg', upsert: false })
+      if (!uploadError) {
+        const { data: urlData } = sb.storage.from('party-photos').getPublicUrl(fileName)
+        photoUrl = urlData.publicUrl
+      }
+    }
+
+    const payload = {
+      agent_name: agentName,
+      party_name: partyName,
+      party_type: formState.party_type,
+      rtr_id: document.getElementById('rtr_id').value.trim() || null,
+      status: formState.status,
+      owner_name: document.getElementById('owner_name').value.trim() || null,
+      phone: document.getElementById('phone').value.trim() || null,
+      state: document.getElementById('state').value || null,
+      district: document.getElementById('district').value || null,
+      tehsil: document.getElementById('tehsil').value || null,
+      town: document.getElementById('town').value || null,
+      village_type: formState.village_type || null,
+      sales_team: document.getElementById('sales_team').value || null,
+      estimated_outlet_universe: parseInt(document.getElementById('estimated_outlet_universe').value) || null,
+      estimated_activation_date: document.getElementById('estimated_activation_date').value || null,
+      remarks: document.getElementById('remarks').value.trim() || null,
+      latitude: gpsCoords ? gpsCoords.lat : null,
+      longitude: gpsCoords ? gpsCoords.lng : null,
+      photo_url: photoUrl,
+      submission_time: new Date().toISOString()
+    }
+
+    if (!navigator.onLine) {
+      const q = getQueue()
+      q.push(payload)
+      saveQueue(q)
+      updateQueueBadge()
+      showToast('info', 'Saved offline — will sync when connected')
+      resetForm()
+    } else {
+      const { error } = await sb.from('submissions').insert(payload)
+      if (error) throw error
+      showToast('success', 'Visit submitted successfully!')
+      resetForm()
+    }
+  } catch(err) {
+    console.error(err)
+    showToast('error', 'Submit failed. Check connection and try again.')
+  } finally {
+    btn.disabled = false
+    btn.textContent = 'Submit visit'
+    btn.classList.remove('loading')
+  }
+}
+
+function resetForm() {
+  document.getElementById('party_name').value = ''
+  document.getElementById('rtr_id').value = ''
+  document.getElementById('owner_name').value = ''
+  document.getElementById('phone').value = ''
+  document.getElementById('state').value = ''
+  document.getElementById('district').innerHTML = '<option value="">Select district</option>'
+  document.getElementById('district').disabled = true
+  document.getElementById('tehsil').innerHTML = '<option value="">Select tehsil</option>'
+  document.getElementById('tehsil').disabled = true
+  document.getElementById('town').innerHTML = '<option value="">Select town</option>'
+  document.getElementById('town').disabled = true
+  document.getElementById('sales_team').value = ''
+  document.getElementById('estimated_outlet_universe').value = ''
+  document.getElementById('estimated_activation_date').value = ''
+  document.getElementById('remarks').value = ''
+  document.getElementById('photoInput').value = ''
+  document.getElementById('photoPreview').style.display = 'none'
+  document.getElementById('photoBtnArea').style.display = 'flex'
+  photoBlob = null
+  formState = { party_type: null, status: null, village_type: null }
+  document.querySelectorAll('.chip').forEach(c => c.className = 'chip')
+  toggleConditional()
+  window.scrollTo(0, 0)
+}
+
+// === TOAST ===
+function showToast(type, msg) {
+  const t = document.getElementById('toast')
+  t.className = 'toast ' + type
+  t.textContent = msg
+  t.style.display = 'block'
+  setTimeout(() => t.style.display = 'none', 3500)
+}
+
+// === ONLINE/OFFLINE ===
+window.addEventListener('online', () => {
+  document.getElementById('offlineBadge').style.display = 'none'
+  flushQueue()
+})
+window.addEventListener('offline', () => {
+  document.getElementById('offlineBadge').style.display = 'inline'
+})
+
+// === INIT ===
+document.addEventListener('DOMContentLoaded', async () => {
+  startGPS()
+  updateQueueBadge()
+  if (!navigator.onLine) document.getElementById('offlineBadge').style.display = 'inline'
+
+  const agent = getAgent()
+  if (!agent) {
+    document.getElementById('agentModal').style.display = 'flex'
+  } else {
+    document.getElementById('agentModal').style.display = 'none'
+    document.getElementById('agentDisplay').textContent = agent
+  }
+
+  await loadLocations()
+  toggleConditional()
+
+  // Try flush queue on load
+  flushQueue()
+})
+</script>
+</body>
+</html>
