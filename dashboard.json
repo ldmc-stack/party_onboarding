@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "_comment": "Everything here is OPTIONAL. The dashboard auto-detects states, village types, statuses, and sales teams from your data. Use this only to control order, labels, or colors. Leave arrays empty to use pure auto-detect.",
+
+  "statuses": {
+    "_comment": "The status values your salesmen submit. Auto-detected if empty. Order here = display order.",
+    "values": ["Onboarded", "Open", "Closed", "Not Available"],
+    "colors": {
+      "Onboarded": "#1D9E75",
+      "Open": "#EF9F27",
+      "Closed": "#888780",
+      "Not Available": "#E24B4A"
+    },
+    "onboardedValue": "Onboarded",
+    "openValue": "Open"
+  },
+
+  "villageTypes": {
+    "_comment": "Auto-detected if empty. Order here = display order. Add DHQ if your data uses it.",
+    "values": ["P1", "P2", "P3"],
+    "colors": {
+      "DHQ": "#534AB7",
+      "P1": "#0F6E56",
+      "P2": "#185FA5",
+      "P3": "#854F0B"
+    }
+  },
+
+  "states": {
+    "_comment": "Leave empty to auto-detect from data. Pin here to force order or hide states.",
+    "values": []
+  },
+
+  "auditThresholds": {
+    "_comment": "A town is 'audit completed' when this fraction of its parties are visited.",
+    "completedFraction": 1.0
+  }
+}

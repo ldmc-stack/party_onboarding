@@ -78,7 +78,7 @@ td{font-size:12px;padding:8px 12px;border-bottom:0.5px solid #F1EFE8;white-space
       <div class="preview-wrap" id="cidPreview">
         <div class="preview-title"><span>Preview</span><span id="cidCount"></span></div>
         <div class="table-wrap">
-          <table><thead><tr><th>Town Code</th><th>State</th><th>District</th><th>Tehsil</th><th>Town</th><th>Salesman</th></tr></thead><tbody id="cidBody"></tbody></table>
+          <table><thead><tr><th>Town Code</th><th>State</th><th>District</th><th>Town</th><th>Salesman</th><th>Town Lat/Long</th></tr></thead><tbody id="cidBody"></tbody></table>
         </div>
         <div class="progress-wrap" id="cidProgress"><div class="progress-label" id="cidProgLabel">Uploading...</div><div class="progress-track"><div class="progress-fill" id="cidProgFill"></div></div></div>
         <div class="btn-row">
@@ -183,7 +183,9 @@ function parseCid(file) {
         town: pick(n,'town/village','town_village','town'),
         tty: pick(n,'tty'),
         salesman: pick(n,'salesman'),
-        phone: pick(n,'phone_no','phone','phone_number') ? String(pick(n,'phone_no','phone','phone_number')) : null
+        phone: pick(n,'phone_no','phone','phone_number') ? String(pick(n,'phone_no','phone','phone_number')) : null,
+        town_lat: parseFloat(pick(n,'latitude','lat','town_lat')) || null,
+        town_long: parseFloat(pick(n,'longitude','long','lng','town_long')) || null
       })
     })
     cidSalesmanMap = {}
@@ -196,8 +198,12 @@ function showCidPreview() {
   document.getElementById('cidPreview').style.display = 'block'
   document.getElementById('cidCount').textContent = cidRows.length + ' town codes'
   document.getElementById('cidBody').innerHTML = cidRows.slice(0,10).map(r =>
-    `<tr><td>${r.cid}</td><td>${r.state||''}</td><td>${r.district||''}</td><td>${r.tehsil||''}</td><td>${r.town||''}</td><td>${r.salesman||'<span style=color:#A32D2D>none</span>'}</td></tr>`
+    `<tr><td>${r.cid}</td><td>${r.state||''}</td><td>${r.district||''}</td><td>${r.town||''}</td><td>${r.salesman||'<span style=color:#A32D2D>none</span>'}</td><td>${r.town_lat&&r.town_long?r.town_lat.toFixed(4)+', '+r.town_long.toFixed(4):'<span style=color:#A32D2D>missing</span>'}</td></tr>`
   ).join('')
+  const noCoords = cidRows.filter(r => !r.town_lat || !r.town_long).length
+  if (noCoords > 0) {
+    showStatus('cidStatus','warn',`⚠ ${noCoords} town codes have no Latitude/Longitude. Geofencing won't work for their parties until added.`)
+  }
 }
 function clearCid() { cidRows=[]; document.getElementById('cidPreview').style.display='none'; document.getElementById('cidInput').value='' }
 
