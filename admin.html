@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Party Onboarding</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:#F4F3EF;color:#1a1a1a;min-height:100vh}
+.header{background:#0F6E56;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.header h1{color:#fff;font-size:15px;font-weight:500}
+.back-btn{background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;text-decoration:none}
+.main{max-width:920px;margin:0 auto;padding:24px}
+.step-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#0F6E56;color:#fff;border-radius:50%;font-size:12px;font-weight:600;margin-right:8px}
+.card{background:#fff;border-radius:12px;border:0.5px solid #E5E3DC;margin-bottom:20px;overflow:hidden}
+.card-header{padding:16px 20px;border-bottom:0.5px solid #F1EFE8}
+.card-title{font-size:14px;font-weight:500;display:flex;align-items:center}
+.card-sub{font-size:12px;color:#73726C;margin-top:5px;margin-left:30px}
+.card-body{padding:20px}
+.upload-zone{border:2px dashed #D3D1C7;border-radius:10px;padding:32px;text-align:center;cursor:pointer;transition:all 0.2s;background:#F8F7F4}
+.upload-zone:hover,.upload-zone.drag{border-color:#0F6E56;background:#F0FAF5}
+.upload-zone svg{margin-bottom:10px;color:#73726C}
+.upload-zone h3{font-size:13px;font-weight:500;margin-bottom:4px}
+.upload-zone p{font-size:12px;color:#73726C}
+.upload-zone input{display:none}
+.preview-wrap{margin-top:16px;display:none}
+.preview-title{font-size:12px;font-weight:500;color:#73726C;margin-bottom:8px;display:flex;justify-content:space-between}
+.table-wrap{overflow-x:auto;border-radius:8px;border:0.5px solid #E5E3DC;max-height:280px;overflow-y:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:10px;color:#73726C;text-transform:uppercase;letter-spacing:0.4px;padding:8px 12px;text-align:left;background:#FBFAF7;border-bottom:0.5px solid #E5E3DC;white-space:nowrap;position:sticky;top:0}
+td{font-size:12px;padding:8px 12px;border-bottom:0.5px solid #F1EFE8;white-space:nowrap}
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:#0F6E56;color:#fff}
+.btn-primary:hover{background:#0A5A46}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+.btn-danger{background:#FCEBEB;color:#A32D2D;border:0.5px solid #E24B4A}
+.btn-secondary{background:#fff;color:#5F5E5A;border:0.5px solid #E5E3DC}
+.btn-row{display:flex;gap:8px;margin-top:16px;align-items:center;flex-wrap:wrap}
+.status-msg{padding:12px 16px;border-radius:8px;font-size:13px;margin-top:12px;display:none}
+.status-msg.success{background:#E5F4ED;color:#0F6E56;border:0.5px solid #1D9E75}
+.status-msg.error{background:#FCEBEB;color:#A32D2D;border:0.5px solid #E24B4A}
+.status-msg.info{background:#E6F1FB;color:#185FA5;border:0.5px solid #378ADD}
+.status-msg.warn{background:#FAEEDA;color:#854F0B;border:0.5px solid #EF9F27}
+.progress-wrap{margin-top:12px;display:none}
+.progress-label{font-size:11px;color:#73726C;margin-bottom:4px}
+.progress-track{height:6px;background:#F1EFE8;border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:#0F6E56;border-radius:3px;transition:width 0.3s;width:0%}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat{background:#F8F7F4;border-radius:8px;padding:12px}
+.stat-val{font-size:22px;font-weight:500;color:#0F6E56}
+.stat-label{font-size:11px;color:#73726C;margin-top:2px}
+.template-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:0.5px solid #E5E3DC;border-radius:8px;padding:8px 14px;font-size:12px;color:#5F5E5A;cursor:pointer;font-family:inherit;margin-top:12px;text-decoration:none}
+.template-btn:hover{border-color:#0F6E56;color:#0F6E56}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚙ Admin — Data Upload</h1>
+  <a class="back-btn" href="index.html">← Dashboard</a>
+</div>
+
+<div class="main">
+
+  <!-- STEP 1: CID MASTER (Book1) -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="step-badge">1</span>Upload CID master (Book1)</div>
+      <div class="card-sub">Maps each Town Code to a salesman. Columns: State, District, Tehsil, Town Code, Town/Village, TTY, Salesman, Phone no</div>
+    </div>
+    <div class="card-body">
+      <div class="upload-zone" id="cidZone" onclick="document.getElementById('cidInput').click()">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <h3>Drop Book1.xlsx here or click to browse</h3>
+        <p>The CID → salesman mapping</p>
+        <input type="file" id="cidInput" accept=".xlsx,.xls" onchange="onCidFile(event)">
+      </div>
+      <div class="preview-wrap" id="cidPreview">
+        <div class="preview-title"><span>Preview</span><span id="cidCount"></span></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Town Code</th><th>State</th><th>District</th><th>Tehsil</th><th>Town</th><th>Salesman</th></tr></thead><tbody id="cidBody"></tbody></table>
+        </div>
+        <div class="progress-wrap" id="cidProgress"><div class="progress-label" id="cidProgLabel">Uploading...</div><div class="progress-track"><div class="progress-fill" id="cidProgFill"></div></div></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="cidUploadBtn" onclick="uploadCid()">Upload CID master</button>
+          <button class="btn btn-secondary" onclick="clearCid()">Clear</button>
+        </div>
+      </div>
+      <div class="status-msg" id="cidStatus"></div>
+    </div>
+  </div>
+
+  <!-- STEP 2: PARTIES (Party_list) -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="step-badge">2</span>Upload party list</div>
+      <div class="card-sub">The parties to validate. Joined to salesman via Town Code. Columns: State, District, Tehsil, Town Code, Town/Village, Population, Village Type, Approx. FMCG Outlet, Latitude, Longitude, Party Name, Party Lat, Party Long, Phone Number</div>
+    </div>
+    <div class="card-body">
+      <div class="upload-zone" id="partyZone" onclick="document.getElementById('partyInput').click()">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <h3>Drop Party_list.xlsx here or click to browse</h3>
+        <p>The parties for salesmen to validate</p>
+        <input type="file" id="partyInput" accept=".xlsx,.xls" onchange="onPartyFile(event)">
+      </div>
+      <div class="preview-wrap" id="partyPreview">
+        <div class="preview-title"><span>Preview</span><span id="partyCount"></span></div>
+        <div id="joinWarn" class="status-msg warn" style="display:none"></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Party Name</th><th>Town Code</th><th>Town</th><th>Type</th><th>Party Lat</th><th>Party Long</th><th>Salesman</th></tr></thead><tbody id="partyBody"></tbody></table>
+        </div>
+        <div class="progress-wrap" id="partyProgress"><div class="progress-label" id="partyProgLabel">Uploading...</div><div class="progress-track"><div class="progress-fill" id="partyProgFill"></div></div></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="partyUploadBtn" onclick="uploadParties()">Upload parties</button>
+          <button class="btn btn-secondary" onclick="clearParty()">Clear</button>
+        </div>
+      </div>
+      <div class="status-msg" id="partyStatus"></div>
+    </div>
+  </div>
+
+  <!-- CURRENT DATA SUMMARY -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="step-badge">✓</span>Current data in database</div>
+    </div>
+    <div class="card-body">
+      <div class="stat-grid">
+        <div class="stat"><div class="stat-val" id="statCid">—</div><div class="stat-label">Town codes (CID)</div></div>
+        <div class="stat"><div class="stat-val" id="statParties">—</div><div class="stat-label">Assigned parties</div></div>
+        <div class="stat"><div class="stat-val" id="statSalesmen">—</div><div class="stat-label">Salesmen</div></div>
+        <div class="stat"><div class="stat-val" id="statSubs">—</div><div class="stat-label">Submissions</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="loadStats()">↻ Refresh stats</button>
+        <button class="btn btn-danger" onclick="clearParties()">Clear all parties</button>
+        <button class="btn btn-danger" onclick="clearCidMaster()">Clear CID master</button>
+      </div>
+      <div class="status-msg" id="generalStatus"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://tzejrlkclshjofqgcsrw.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWpybGtjbHNoam9mcWdjc3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDgwMjAsImV4cCI6MjA5NjU4NDAyMH0.vxlWh1-ptyTKJCaaluPFX1hJ1UlqFnumBD075Nfh100'
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+let cidRows = []
+let partyRows = []
+let cidSalesmanMap = {}
+
+function norm(obj) {
+  const n = {}
+  Object.entries(obj).forEach(([k,v]) => n[String(k).toLowerCase().trim().replace(/[.\s]+/g,'_')] = typeof v === 'string' ? v.trim() : v)
+  return n
+}
+function pick(o, ...keys) { for (const k of keys) if (o[k] !== undefined && o[k] !== '') return o[k]; return null }
+
+// === CID MASTER ===
+function onCidFile(e) { const f = e.target.files[0]; if (f) parseCid(f) }
+function parseCid(file) {
+  const reader = new FileReader()
+  reader.onload = e => {
+    const wb = XLSX.read(e.target.result, { type:'array' })
+    const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval:'' })
+    const seen = {}
+    cidRows = []
+    raw.forEach(r => {
+      const n = norm(r)
+      const cid = pick(n,'town_code','towncode','cid')
+      if (!cid) return
+      if (seen[cid]) return // dedup, first wins
+      seen[cid] = true
+      cidRows.push({
+        cid: parseInt(cid),
+        state: pick(n,'state'),
+        district: pick(n,'district'),
+        tehsil: pick(n,'tehsil'),
+        town: pick(n,'town/village','town_village','town'),
+        tty: pick(n,'tty'),
+        salesman: pick(n,'salesman'),
+        phone: pick(n,'phone_no','phone','phone_number') ? String(pick(n,'phone_no','phone','phone_number')) : null
+      })
+    })
+    cidSalesmanMap = {}
+    cidRows.forEach(r => cidSalesmanMap[r.cid] = r.salesman)
+    showCidPreview()
+  }
+  reader.readAsArrayBuffer(file)
+}
+function showCidPreview() {
+  document.getElementById('cidPreview').style.display = 'block'
+  document.getElementById('cidCount').textContent = cidRows.length + ' town codes'
+  document.getElementById('cidBody').innerHTML = cidRows.slice(0,10).map(r =>
+    `<tr><td>${r.cid}</td><td>${r.state||''}</td><td>${r.district||''}</td><td>${r.tehsil||''}</td><td>${r.town||''}</td><td>${r.salesman||'<span style=color:#A32D2D>none</span>'}</td></tr>`
+  ).join('')
+}
+function clearCid() { cidRows=[]; document.getElementById('cidPreview').style.display='none'; document.getElementById('cidInput').value='' }
+
+async function uploadCid() {
+  if (!cidRows.length) return
+  const btn = document.getElementById('cidUploadBtn'); btn.disabled=true; btn.textContent='Uploading...'
+  document.getElementById('cidProgress').style.display='block'
+  const BATCH=200; let done=0
+  for (let i=0;i<cidRows.length;i+=BATCH) {
+    const batch = cidRows.slice(i,i+BATCH)
+    const { error } = await sb.from('cid_master').upsert(batch, { onConflict:'cid' })
+    if (error) { showStatus('cidStatus','error','Error: '+error.message); btn.disabled=false; btn.textContent='Upload CID master'; return }
+    done += batch.length
+    const pct = Math.round(done/cidRows.length*100)
+    document.getElementById('cidProgFill').style.width=pct+'%'
+    document.getElementById('cidProgLabel').textContent=`Uploading... ${pct}%`
+  }
+  btn.disabled=false; btn.textContent='Upload CID master'
+  showStatus('cidStatus','success',`Done! ${done} town codes uploaded.`)
+  clearCid(); loadStats()
+}
+
+// === PARTIES ===
+function onPartyFile(e) { const f = e.target.files[0]; if (f) parseParty(f) }
+async function parseParty(file) {
+  // ensure we have salesman map - load from DB if not in memory
+  if (Object.keys(cidSalesmanMap).length === 0) {
+    const { data } = await sb.from('cid_master').select('cid,salesman')
+    ;(data||[]).forEach(r => cidSalesmanMap[r.cid] = r.salesman)
+  }
+  const reader = new FileReader()
+  reader.onload = e => {
+    const wb = XLSX.read(e.target.result, { type:'array' })
+    const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval:'' })
+    partyRows = []
+    let noSalesman = 0
+    raw.forEach(r => {
+      const n = norm(r)
+      const cid = pick(n,'town_code','towncode','cid')
+      const pname = pick(n,'party_name','partyname')
+      if (!cid || !pname) return
+      const cidInt = parseInt(cid)
+      const salesman = cidSalesmanMap[cidInt] || null
+      if (!salesman) noSalesman++
+      partyRows.push({
+        cid: cidInt,
+        party_name: pname,
+        party_lat: parseFloat(pick(n,'party_lat','partylat')) || null,
+        party_long: parseFloat(pick(n,'party_long','partylong')) || null,
+        phone: pick(n,'phone_number','phone') ? String(pick(n,'phone_number','phone')) : null,
+        state: pick(n,'state'),
+        district: pick(n,'district'),
+        tehsil: pick(n,'tehsil'),
+        town: pick(n,'town/village','town_village','town'),
+        village_type: pick(n,'village_type','villagetype','type'),
+        population: parseInt(pick(n,'population')) || null,
+        approx_outlets: parseInt(pick(n,'approx_fmcg_outlet','approx_outlets','approx._fmcg_outlet')) || null,
+        town_lat: parseFloat(pick(n,'latitude','lat')) || null,
+        town_long: parseFloat(pick(n,'longitude','long','lng')) || null,
+        _salesman: salesman
+      })
+    })
+    showPartyPreview(noSalesman)
+  }
+  reader.readAsArrayBuffer(file)
+}
+function showPartyPreview(noSalesman) {
+  document.getElementById('partyPreview').style.display = 'block'
+  document.getElementById('partyCount').textContent = partyRows.length + ' parties'
+  const warn = document.getElementById('joinWarn')
+  if (noSalesman > 0) {
+    warn.style.display='block'
+    warn.textContent = `⚠ ${noSalesman} parties have a Town Code with no salesman in the CID master. They'll upload but won't show for any salesman until you assign one. Upload Book1 first if you haven't.`
+  } else warn.style.display='none'
+  document.getElementById('partyBody').innerHTML = partyRows.slice(0,10).map(r =>
+    `<tr><td>${r.party_name}</td><td>${r.cid}</td><td>${r.town||''}</td><td>${r.village_type||''}</td><td>${r.party_lat||''}</td><td>${r.party_long||''}</td><td>${r._salesman||'<span style=color:#A32D2D>none</span>'}</td></tr>`
+  ).join('')
+}
+function clearParty() { partyRows=[]; document.getElementById('partyPreview').style.display='none'; document.getElementById('partyInput').value='' }
+
+async function uploadParties() {
+  if (!partyRows.length) return
+  const btn = document.getElementById('partyUploadBtn'); btn.disabled=true; btn.textContent='Uploading...'
+  document.getElementById('partyProgress').style.display='block'
+  // strip _salesman helper before insert
+  const clean = partyRows.map(({_salesman, ...rest}) => rest)
+  const BATCH=200; let done=0
+  for (let i=0;i<clean.length;i+=BATCH) {
+    const batch = clean.slice(i,i+BATCH)
+    const { error } = await sb.from('assigned_parties').insert(batch)
+    if (error) { showStatus('partyStatus','error','Error: '+error.message); btn.disabled=false; btn.textContent='Upload parties'; return }
+    done += batch.length
+    const pct = Math.round(done/clean.length*100)
+    document.getElementById('partyProgFill').style.width=pct+'%'
+    document.getElementById('partyProgLabel').textContent=`Uploading... ${pct}%`
+  }
+  btn.disabled=false; btn.textContent='Upload parties'
+  showStatus('partyStatus','success',`Done! ${done} parties uploaded.`)
+  clearParty(); loadStats()
+}
+
+// === STATS ===
+async function loadStats() {
+  const [cid, parties, subs] = await Promise.all([
+    sb.from('cid_master').select('cid,salesman', { count:'exact' }),
+    sb.from('assigned_parties').select('party_id', { count:'exact', head:true }),
+    sb.from('submissions').select('id', { count:'exact', head:true })
+  ])
+  document.getElementById('statCid').textContent = cid.count ?? '0'
+  document.getElementById('statParties').textContent = parties.count ?? '0'
+  document.getElementById('statSubs').textContent = subs.count ?? '0'
+  const salesmen = new Set((cid.data||[]).map(r => r.salesman).filter(Boolean))
+  document.getElementById('statSalesmen').textContent = salesmen.size
+}
+
+async function clearParties() {
+  if (!confirm('Delete ALL assigned parties? Submissions are kept.')) return
+  await sb.from('assigned_parties').delete().neq('party_id','00000000-0000-0000-0000-000000000000')
+  loadStats(); showStatus('generalStatus','info','All parties cleared.')
+}
+async function clearCidMaster() {
+  if (!confirm('Delete the entire CID master? Parties will lose their salesman link.')) return
+  await sb.from('cid_master').delete().neq('cid',-1)
+  loadStats(); showStatus('generalStatus','info','CID master cleared.')
+}
+
+function showStatus(id,type,msg) {
+  const el = document.getElementById(id)
+  el.className='status-msg '+type; el.textContent=msg; el.style.display='block'
+  if (type==='success'||type==='info') setTimeout(()=>el.style.display='none',5000)
+}
+
+loadStats()
+</script>
+</body>
+</html>
