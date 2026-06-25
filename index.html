@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Party Onboarding Dashboard</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:#F4F3EF;color:#1a1a1a;min-height:100vh}
+
+/* HEADER */
+.header{background:#0F6E56;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
+.header-left{display:flex;align-items:center;gap:12px}
+.logo{width:28px;height:28px;background:rgba(255,255,255,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.header h1{color:#fff;font-size:15px;font-weight:500}
+.header-right{display:flex;align-items:center;gap:8px}
+.header-btn{background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.header-btn:hover{background:rgba(255,255,255,0.25)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75;display:inline-block}
+.sync-dot.syncing{background:#EF9F27;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* MAIN LAYOUT */
+.main{max-width:1400px;margin:0 auto;padding:20px 24px}
+
+/* STATE FILTER BAR */
+.filter-bar{background:#fff;border-radius:12px;border:0.5px solid #E5E3DC;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.filter-bar label{font-size:12px;color:#73726C;font-weight:500;white-space:nowrap}
+.filter-group{display:flex;gap:6px;flex-wrap:wrap}
+.filter-chip{padding:6px 14px;border-radius:8px;border:1px solid #E5E3DC;background:#F8F7F4;font-size:13px;color:#5F5E5A;cursor:pointer;transition:all 0.15s;font-family:inherit}
+.filter-chip.active{background:#0F6E56;border-color:#0F6E56;color:#fff;font-weight:500}
+.filter-divider{width:1px;height:24px;background:#E5E3DC}
+.date-filter{display:flex;gap:6px;align-items:center}
+.date-filter input{border:1px solid #E5E3DC;border-radius:8px;padding:5px 10px;font-size:12px;color:#1a1a1a;background:#F8F7F4;font-family:inherit;outline:none}
+.date-filter input:focus{border-color:#0F6E56}
+.last-updated{margin-left:auto;font-size:11px;color:#9C9A92}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
+.kpi-card{background:#fff;border-radius:12px;border:0.5px solid #E5E3DC;padding:16px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
+.kpi-card.green::before{background:#1D9E75}
+.kpi-card.amber::before{background:#EF9F27}
+.kpi-card.gray::before{background:#888780}
+.kpi-card.red::before{background:#E24B4A}
+.kpi-card.blue::before{background:#378ADD}
+.kpi-card.teal::before{background:#0F6E56}
+.kpi-card.purple::before{background:#534AB7}
+.kpi-label{font-size:10px;color:#73726C;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;font-weight:500}
+.kpi-value{font-size:28px;font-weight:500;line-height:1;margin-bottom:4px}
+.kpi-value.green{color:#0F6E56}
+.kpi-value.amber{color:#BA7517}
+.kpi-value.gray{color:#5F5E5A}
+.kpi-value.red{color:#A32D2D}
+.kpi-value.blue{color:#185FA5}
+.kpi-delta{font-size:11px;color:#9C9A92}
+.kpi-delta.up{color:#1D9E75}
+.kpi-delta.down{color:#E24B4A}
+
+/* TODAY KPI ROW */
+.today-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
+.today-card{background:#FBFAF7;border-radius:10px;border:1px dashed #D3D1C7;padding:12px}
+.today-label{font-size:10px;color:#9C9A92;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+.today-value{font-size:20px;font-weight:500;color:#1a1a1a}
+
+/* TWO COLUMN LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+
+/* CARDS */
+.card{background:#fff;border-radius:12px;border:0.5px solid #E5E3DC;overflow:hidden}
+.card-header{padding:14px 18px;border-bottom:0.5px solid #F1EFE8;display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:500;color:#1a1a1a}
+.card-sub{font-size:11px;color:#9C9A92}
+.card-body{padding:0}
+
+/* STATUS BREAKDOWN */
+.status-bar-wrap{padding:16px 18px}
+.status-bar-track{height:8px;border-radius:4px;background:#F1EFE8;overflow:hidden;display:flex;margin-bottom:12px}
+.status-bar-seg{height:100%;transition:width 0.6s ease}
+.status-legend{display:flex;flex-wrap:wrap;gap:10px}
+.status-legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#5F5E5A}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* TABLES */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{font-size:10px;color:#73726C;text-transform:uppercase;letter-spacing:0.4px;padding:10px 16px;text-align:left;background:#FBFAF7;border-bottom:0.5px solid #E5E3DC;white-space:nowrap}
+.data-table td{font-size:13px;padding:10px 16px;border-bottom:0.5px solid #F1EFE8;color:#1a1a1a}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:#FBFAF7}
+.data-table .num{text-align:right;font-variant-numeric:tabular-nums}
+.pct-cell{font-weight:500;color:#0F6E56}
+.pct-cell.warn{color:#BA7517}
+.pct-cell.low{color:#A32D2D}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500}
+.badge-onboarded{background:#E5F4ED;color:#0F6E56}
+.badge-open{background:#FAEEDA;color:#854F0B}
+.badge-closed{background:#F1EFE8;color:#5F5E5A}
+.badge-doesnt{background:#FCEBEB;color:#A32D2D}
+
+/* VILLAGE TYPE CARDS */
+.vtype-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.vtype-card{background:#fff;border-radius:12px;border:0.5px solid #E5E3DC;padding:16px}
+.vtype-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.vtype-title{font-size:14px;font-weight:600;color:#0F6E56}
+.vtype-total{font-size:12px;color:#73726C}
+.vtype-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vtype-stat{background:#F8F7F4;border-radius:8px;padding:10px}
+.vtype-stat-label{font-size:10px;color:#73726C;margin-bottom:4px}
+.vtype-stat-value{font-size:18px;font-weight:500}
+
+/* PARTY LIST */
+.party-filters{padding:12px 16px;border-bottom:0.5px solid #F1EFE8;display:flex;gap:8px;flex-wrap:wrap}
+.party-search{flex:1;min-width:160px;border:0.5px solid #E5E3DC;border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;outline:none;background:#F8F7F4}
+.party-search:focus{border-color:#0F6E56;background:#fff}
+.party-select{border:0.5px solid #E5E3DC;border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;outline:none;background:#F8F7F4;cursor:pointer}
+.party-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;padding:16px}
+.party-card{border:0.5px solid #E5E3DC;border-radius:10px;overflow:hidden;background:#fff}
+.party-photo{width:100%;height:120px;object-fit:cover;background:#F1EFE8;display:flex;align-items:center;justify-content:center;color:#9C9A92;font-size:12px}
+.party-photo img{width:100%;height:120px;object-fit:cover}
+.party-info{padding:10px 12px}
+.party-name{font-size:13px;font-weight:500;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.party-meta{font-size:11px;color:#73726C;display:flex;flex-direction:column;gap:2px}
+
+/* EXCEL DOWNLOAD */
+.export-btn{background:#fff;border:0.5px solid #E5E3DC;border-radius:8px;padding:7px 14px;font-size:12px;color:#5F5E5A;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.export-btn:hover{border-color:#0F6E56;color:#0F6E56}
+
+/* SECTION TITLE */
+.section-title{font-size:12px;font-weight:500;color:#73726C;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;margin-top:8px}
+
+/* MAP */
+.map-card{margin-bottom:20px}
+#mapContainer{height:420px;width:100%;border-radius:0 0 12px 12px;z-index:1}
+.map-legend{display:flex;gap:14px;padding:10px 18px;border-top:0.5px solid #F1EFE8;flex-wrap:wrap}
+.map-legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#5F5E5A}
+.map-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,0.1)}
+.leaflet-popup-content{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;font-size:12px}
+.leaflet-popup-content b{font-size:13px}
+
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;background:#F4F3EF;display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:12px}
+.spinner{width:32px;height:32px;border:3px solid #E5E3DC;border-top-color:#0F6E56;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:#73726C}
+
+/* EMPTY */
+.empty{padding:40px;text-align:center;color:#9C9A92;font-size:13px}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:0.5px solid #E5E3DC;padding:0 18px;background:#fff}
+.tab{padding:10px 16px;font-size:13px;color:#73726C;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all 0.15s}
+.tab.active{color:#0F6E56;border-bottom-color:#0F6E56;font-weight:500}
+
+/* RESPONSIVE */
+@media(max-width:1200px){.kpi-grid,.today-row{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.kpi-grid,.today-row{grid-template-columns:repeat(2,1fr)}.two-col,.three-col,.vtype-grid{grid-template-columns:1fr}.main{padding:16px}}
+@media(max-width:600px){.kpi-grid,.today-row{grid-template-columns:repeat(2,1fr)}.filter-bar{gap:10px}}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading dashboard...</div>
+</div>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">🏪</div>
+    <h1>Party Onboarding</h1>
+  </div>
+  <div class="header-right">
+    <span class="sync-dot" id="syncDot" title="Last synced"></span>
+    <button class="header-btn" onclick="loadData()">↻ Refresh</button>
+    <button class="header-btn" onclick="exportExcel()">↓ Export Excel</button>
+    <a class="header-btn" href="form.html">+ New visit</a>
+    <a class="header-btn" href="admin.html">⚙ Admin</a>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <label>State</label>
+    <div class="filter-group" id="stateFilters">
+      <button class="filter-chip active" onclick="setStateFilter('ALL',this)">All states</button>
+    </div>
+    <div class="filter-divider"></div>
+    <label>Village type</label>
+    <div class="filter-group">
+      <button class="filter-chip active" onclick="setVtypeFilter('ALL',this)">All</button>
+      <button class="filter-chip" onclick="setVtypeFilter('DHQ',this)">DHQ</button>
+      <button class="filter-chip" onclick="setVtypeFilter('P1',this)">P1</button>
+      <button class="filter-chip" onclick="setVtypeFilter('P2',this)">P2</button>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="date-filter">
+      <label>From</label>
+      <input type="date" id="dateFrom" onchange="applyFilters()">
+      <label>To</label>
+      <input type="date" id="dateTo" onchange="applyFilters()">
+    </div>
+    <span class="last-updated" id="lastUpdated">—</span>
+  </div>
+
+  <!-- OVERALL KPIs -->
+  <div class="section-title">Overall</div>
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="kpi-card teal"><div class="kpi-label">Total visited</div><div class="kpi-value" id="kpi-visited">—</div><div class="kpi-delta" id="kpi-visited-d"></div></div>
+    <div class="kpi-card green"><div class="kpi-label">Onboarded</div><div class="kpi-value green" id="kpi-onboarded">—</div><div class="kpi-delta" id="kpi-onboarded-d"></div></div>
+    <div class="kpi-card amber"><div class="kpi-label">Open</div><div class="kpi-value amber" id="kpi-open">—</div><div class="kpi-delta" id="kpi-open-d"></div></div>
+    <div class="kpi-card gray"><div class="kpi-label">Closed</div><div class="kpi-value gray" id="kpi-closed">—</div><div class="kpi-delta" id="kpi-closed-d"></div></div>
+    <div class="kpi-card red"><div class="kpi-label">Not avail.</div><div class="kpi-value red" id="kpi-doesnt">—</div><div class="kpi-delta" id="kpi-doesnt-d"></div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Conversion %</div><div class="kpi-value blue" id="kpi-conv">—</div><div class="kpi-delta" id="kpi-conv-d"></div></div>
+  </div>
+
+  <!-- COVERAGE ROW -->
+  <div class="section-title">List coverage</div>
+  <div class="kpi-grid" id="coverageGrid">
+    <div class="kpi-card teal"><div class="kpi-label">Assigned parties</div><div class="kpi-value" id="kpi-assigned">—</div><div class="kpi-delta">total on list</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Validated</div><div class="kpi-value green" id="kpi-validated">—</div><div class="kpi-delta" id="kpi-validated-d"></div></div>
+    <div class="kpi-card amber"><div class="kpi-label">Pending</div><div class="kpi-value amber" id="kpi-pending">—</div><div class="kpi-delta">not yet visited</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Coverage %</div><div class="kpi-value blue" id="kpi-coverage">—</div><div class="kpi-delta">validated ÷ assigned</div></div>
+    <div class="kpi-card purple"><div class="kpi-label">New parties</div><div class="kpi-value" style="color:#534AB7" id="kpi-new">—</div><div class="kpi-delta">found off-list</div></div>
+    <div class="kpi-card gray"><div class="kpi-label">Salesmen</div><div class="kpi-value gray" id="kpi-salesmen">—</div><div class="kpi-delta">submitted</div></div>
+  </div>
+
+  <!-- TODAY KPIs -->
+  <div class="section-title">Today</div>
+  <div class="today-row">
+    <div class="today-card"><div class="today-label">Visited</div><div class="today-value" id="today-visited">—</div></div>
+    <div class="today-card"><div class="today-label">Onboarded</div><div class="today-value" style="color:#0F6E56" id="today-onboarded">—</div></div>
+    <div class="today-card"><div class="today-label">Open</div><div class="today-value" style="color:#BA7517" id="today-open">—</div></div>
+    <div class="today-card"><div class="today-label">Closed</div><div class="today-value" style="color:#5F5E5A" id="today-closed">—</div></div>
+    <div class="today-card"><div class="today-label">Doesn't exist</div><div class="today-value" style="color:#A32D2D" id="today-doesnt">—</div></div>
+    <div class="today-card"><div class="today-label">Conversion %</div><div class="today-value" style="color:#185FA5" id="today-conv">—</div></div>
+  </div>
+
+  <!-- STATUS BREAKDOWN + PARTY TYPE SPLIT -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Status breakdown</span><span class="card-sub" id="breakdownTotal"></span></div>
+      <div class="status-bar-wrap">
+        <div class="status-bar-track" id="statusBarTrack"></div>
+        <div class="status-legend" id="statusLegend"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">New vs Existing parties</span></div>
+      <div class="status-bar-wrap">
+        <div class="status-bar-track" id="partyTypeBar"></div>
+        <div class="status-legend" id="partyTypeLegend"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VILLAGE TYPE BREAKDOWN -->
+  <div class="section-title">Village type breakdown</div>
+  <div class="vtype-grid" id="vtypeGrid"></div>
+
+  <!-- MAP -->
+  <div class="card map-card">
+    <div class="card-header">
+      <span class="card-title">Visit locations map</span>
+      <span class="card-sub" id="mapCount"></span>
+    </div>
+    <div id="mapContainer"></div>
+    <div class="map-legend">
+      <div class="map-legend-item"><div class="map-dot" style="background:#1D9E75"></div>Onboarded</div>
+      <div class="map-legend-item"><div class="map-dot" style="background:#EF9F27"></div>Open</div>
+      <div class="map-legend-item"><div class="map-dot" style="background:#888780"></div>Closed</div>
+      <div class="map-legend-item"><div class="map-dot" style="background:#E24B4A"></div>Doesn't exist</div>
+    </div>
+  </div>
+
+  <!-- DISTRICT + SALES TEAM -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">District summary</span>
+        <div class="tabs" style="border:none;padding:0;background:transparent">
+          <span class="tab active" onclick="switchDistrictTab('overall',this)">Overall</span>
+          <span class="tab" onclick="switchDistrictTab('today',this)">Today</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="data-table" id="districtTable">
+          <thead><tr><th>District</th><th class="num">Visited</th><th class="num">Onboarded</th><th class="num">Conv %</th></tr></thead>
+          <tbody id="districtBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Sales team summary</span>
+        <div class="tabs" style="border:none;padding:0;background:transparent">
+          <span class="tab active" onclick="switchTeamTab('overall',this)">Overall</span>
+          <span class="tab" onclick="switchTeamTab('today',this)">Today</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="data-table" id="teamTable">
+          <thead><tr><th>Team</th><th class="num">Visited</th><th class="num">Onboarded</th><th class="num">Conv %</th></tr></thead>
+          <tbody id="teamBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISTRICT → TEHSIL → TOWN HIERARCHY -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+      <span class="card-title">District → Tehsil → Town hierarchy</span>
+      <input type="text" placeholder="Search town..." id="hierarchySearch" style="border:0.5px solid #E5E3DC;border-radius:6px;padding:5px 10px;font-size:12px;font-family:inherit;outline:none;width:180px" oninput="renderHierarchy()">
+    </div>
+    <div class="card-body">
+      <table class="data-table" id="hierarchyTable">
+        <thead><tr><th>District</th><th>Tehsil</th><th>Town</th><th>Type</th><th class="num">Visited</th><th class="num">Onboarded</th><th class="num">Open</th><th class="num">Conv %</th></tr></thead>
+        <tbody id="hierarchyBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EXISTING VS NEW SPLIT -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Existing vs New — Overall</span></div>
+      <div class="card-body">
+        <table class="data-table">
+          <thead><tr><th>Party type</th><th class="num">Visited</th><th class="num">Open</th><th class="num">Onboarded</th><th class="num">Conv %</th></tr></thead>
+          <tbody id="existNewOverallBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Existing vs New — Today</span></div>
+      <div class="card-body">
+        <table class="data-table">
+          <thead><tr><th>Party type</th><th class="num">Visited</th><th class="num">Open</th><th class="num">Onboarded</th><th class="num">Conv %</th></tr></thead>
+          <tbody id="existNewTodayBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOWN ONBOARDING TRACKER -->
+  <div class="section-title">Town onboarding tracker</div>
+  <div class="vtype-grid" id="townTrackerGrid"></div>
+
+  <!-- TOWN COMBO STATUS TABLE -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+      <span class="card-title">Town combo status table</span>
+      <input type="text" placeholder="Search town..." id="comboSearch" style="border:0.5px solid #E5E3DC;border-radius:6px;padding:5px 10px;font-size:12px;font-family:inherit;outline:none;width:180px" oninput="renderComboTable()">
+    </div>
+    <div class="card-body" style="overflow-x:auto">
+      <table class="data-table" id="comboTable">
+        <thead><tr>
+          <th>District</th><th>Tehsil</th><th>Town</th><th>Type</th><th>Tracker status</th>
+          <th class="num">In DB</th><th class="num">Visited</th><th class="num">Open</th><th class="num">Onboarded</th><th class="num">Closed</th>
+        </tr></thead>
+        <tbody id="comboBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PARTY LIST -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+      <span class="card-title">Party list</span>
+      <button class="export-btn" onclick="exportExcel()">↓ Excel</button>
+    </div>
+    <div class="party-filters">
+      <input class="party-search" type="text" placeholder="Search party name, owner, phone..." id="partySearch" oninput="renderPartyList()">
+      <select class="party-select" id="partyStatusFilter" onchange="renderPartyList()">
+        <option value="">All statuses</option>
+        <option>Onboarded</option>
+        <option>Open</option>
+        <option>Closed</option>
+        <option>Doesn't Exist</option>
+      </select>
+      <select class="party-select" id="partyTypeFilter" onchange="renderPartyList()">
+        <option value="">All types</option>
+        <option>New</option>
+        <option>Existing</option>
+      </select>
+    </div>
+    <div id="partyListWrap">
+      <div class="party-grid" id="partyGrid"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://tzejrlkclshjofqgcsrw.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWpybGtjbHNoam9mcWdjc3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDgwMjAsImV4cCI6MjA5NjU4NDAyMH0.vxlWh1-ptyTKJCaaluPFX1hJ1UlqFnumBD075Nfh100'
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+let allData = []
+let filteredData = []
+let assignedParties = []
+let activeState = 'ALL'
+let activeVtype = 'ALL'
+let districtTab = 'overall'
+let teamTab = 'overall'
+let map = null
+let markerLayer = null
+
+const today = new Date().toISOString().split('T')[0]
+
+// === LOAD DATA ===
+async function loadData() {
+  document.getElementById('syncDot').classList.add('syncing')
+  const [subsRes, partiesRes] = await Promise.all([
+    sb.from('submissions').select('*').order('submission_time', { ascending: false }),
+    sb.from('assigned_parties').select('party_id,cid,village_type,state,district,town')
+  ])
+  if (subsRes.error) { console.error(subsRes.error); return }
+  allData = subsRes.data || []
+  assignedParties = partiesRes.data || []
+  document.getElementById('syncDot').classList.remove('syncing')
+  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString()
+  buildStateFilters()
+  applyFilters()
+  document.getElementById('loadingOverlay').style.display = 'none'
+}
+
+function renderCoverage() {
+  // Filter assigned parties by active state
+  let assigned = assignedParties
+  if (activeState !== 'ALL') assigned = assigned.filter(p => p.state === activeState)
+  if (activeVtype !== 'ALL') assigned = assigned.filter(p => p.village_type === activeVtype)
+  const totalAssigned = assigned.length
+
+  // Validated = assigned parties that have a submission
+  const validatedIds = new Set(filteredData.filter(r => r.party_id).map(r => r.party_id))
+  const validated = assigned.filter(p => validatedIds.has(p.party_id)).length
+  const pending = totalAssigned - validated
+  const coverage = totalAssigned > 0 ? ((validated/totalAssigned)*100).toFixed(1) : '0.0'
+  const newParties = filteredData.filter(r => r.source === 'new').length
+  const salesmen = new Set(filteredData.map(r => r.salesman).filter(Boolean)).size
+
+  document.getElementById('kpi-assigned').textContent = totalAssigned.toLocaleString()
+  document.getElementById('kpi-validated').textContent = validated.toLocaleString()
+  document.getElementById('kpi-validated-d').textContent = coverage + '% done'
+  document.getElementById('kpi-pending').textContent = pending.toLocaleString()
+  document.getElementById('kpi-coverage').textContent = coverage + '%'
+  document.getElementById('kpi-new').textContent = newParties.toLocaleString()
+  document.getElementById('kpi-salesmen').textContent = salesmen
+}
+
+// === STATE FILTERS ===
+function buildStateFilters() {
+  const states = [...new Set(allData.map(r => r.state).filter(Boolean))].sort()
+  const wrap = document.getElementById('stateFilters')
+  wrap.innerHTML = '<button class="filter-chip active" onclick="setStateFilter(\'ALL\',this)">All states</button>'
+  states.forEach(s => {
+    const b = document.createElement('button')
+    b.className = 'filter-chip'
+    b.textContent = s
+    b.onclick = function(){ setStateFilter(s, this) }
+    wrap.appendChild(b)
+  })
+}
+
+function setStateFilter(val, el) {
+  activeState = val
+  document.querySelectorAll('#stateFilters .filter-chip').forEach(c => c.classList.remove('active'))
+  el.classList.add('active')
+  applyFilters()
+}
+
+function setVtypeFilter(val, el) {
+  activeVtype = val
+  document.querySelectorAll('.filter-group:nth-child(5) .filter-chip').forEach(c => c.classList.remove('active'))
+  el.classList.add('active')
+  applyFilters()
+}
+
+// === APPLY FILTERS ===
+function applyFilters() {
+  const from = document.getElementById('dateFrom').value
+  const to = document.getElementById('dateTo').value
+  filteredData = allData.filter(r => {
+    if (activeState !== 'ALL' && r.state !== activeState) return false
+    if (activeVtype !== 'ALL' && r.village_type !== activeVtype) return false
+    if (from && r.submission_time < from) return false
+    if (to && r.submission_time > to + 'T23:59:59') return false
+    return true
+  })
+  renderAll()
+}
+
+// === RENDER ALL ===
+function renderAll() {
+  renderKPIs()
+  renderCoverage()
+  renderTodayKPIs()
+  renderExistNew()
+  renderTownTracker()
+  renderComboTable()
+  renderStatusBreakdown()
+  renderPartyTypeBreakdown()
+  renderVtypeGrid()
+  renderMap()
+  renderDistrictTable()
+  renderTeamTable()
+  renderHierarchy()
+  renderPartyList()
+}
+
+// === KPIs ===
+function kpiCalc(rows) {
+  const visited = rows.length
+  const onboarded = rows.filter(r => r.status === 'Onboarded').length
+  const open = rows.filter(r => r.status === 'Open').length
+  const closed = rows.filter(r => r.status === 'Closed').length
+  const doesnt = rows.filter(r => r.status === "Doesn't Exist").length
+  const conv = visited > 0 ? ((onboarded / visited) * 100).toFixed(1) : '0.0'
+  return { visited, onboarded, open, closed, doesnt, conv }
+}
+
+function renderKPIs() {
+  const k = kpiCalc(filteredData)
+  document.getElementById('kpi-visited').textContent = k.visited.toLocaleString()
+  document.getElementById('kpi-onboarded').textContent = k.onboarded.toLocaleString()
+  document.getElementById('kpi-open').textContent = k.open.toLocaleString()
+  document.getElementById('kpi-closed').textContent = k.closed.toLocaleString()
+  document.getElementById('kpi-doesnt').textContent = k.doesnt.toLocaleString()
+  document.getElementById('kpi-conv').textContent = k.conv + '%'
+}
+
+function renderTodayKPIs() {
+  const todayData = filteredData.filter(r => r.submission_time && r.submission_time.startsWith(today))
+  const k = kpiCalc(todayData)
+  document.getElementById('today-visited').textContent = k.visited
+  document.getElementById('today-onboarded').textContent = k.onboarded
+  document.getElementById('today-open').textContent = k.open
+  document.getElementById('today-closed').textContent = k.closed
+  document.getElementById('today-doesnt').textContent = k.doesnt
+  document.getElementById('today-conv').textContent = k.conv + '%'
+}
+
+// === STATUS BREAKDOWN ===
+function renderStatusBreakdown() {
+  const k = kpiCalc(filteredData)
+  const total = k.visited || 1
+  document.getElementById('breakdownTotal').textContent = total + ' total'
+  const segments = [
+    { val: k.onboarded, color: '#1D9E75' },
+    { val: k.open, color: '#EF9F27' },
+    { val: k.closed, color: '#888780' },
+    { val: k.doesnt, color: '#E24B4A' }
+  ]
+  document.getElementById('statusBarTrack').innerHTML = segments.map(s =>
+    `<div class="status-bar-seg" style="width:${(s.val/total*100).toFixed(1)}%;background:${s.color}"></div>`
+  ).join('')
+  const labels = ['Onboarded','Open','Closed',"Doesn't Exist"]
+  const colors = ['#1D9E75','#EF9F27','#888780','#E24B4A']
+  const vals = [k.onboarded, k.open, k.closed, k.doesnt]
+  document.getElementById('statusLegend').innerHTML = labels.map((l,i) =>
+    `<div class="status-legend-item"><div class="legend-dot" style="background:${colors[i]}"></div>${l} <strong>${vals[i]}</strong></div>`
+  ).join('')
+}
+
+function renderPartyTypeBreakdown() {
+  const newCount = filteredData.filter(r => r.party_type === 'New').length
+  const exCount = filteredData.filter(r => r.party_type === 'Existing').length
+  const total = (newCount + exCount) || 1
+  document.getElementById('partyTypeBar').innerHTML =
+    `<div class="status-bar-seg" style="width:${(newCount/total*100).toFixed(1)}%;background:#0F6E56"></div>
+     <div class="status-bar-seg" style="width:${(exCount/total*100).toFixed(1)}%;background:#378ADD"></div>`
+  document.getElementById('partyTypeLegend').innerHTML =
+    `<div class="status-legend-item"><div class="legend-dot" style="background:#0F6E56"></div>New <strong>${newCount}</strong></div>
+     <div class="status-legend-item"><div class="legend-dot" style="background:#378ADD"></div>Existing <strong>${exCount}</strong></div>`
+}
+
+// === VILLAGE TYPE GRID ===
+function renderVtypeGrid() {
+  const types = ['DHQ','P1','P2']
+  const grid = document.getElementById('vtypeGrid')
+  grid.innerHTML = types.map(t => {
+    const rows = filteredData.filter(r => r.village_type === t)
+    const k = kpiCalc(rows)
+    return `<div class="vtype-card">
+      <div class="vtype-header"><span class="vtype-title">${t}</span><span class="vtype-total">${k.visited} visits</span></div>
+      <div class="vtype-stats">
+        <div class="vtype-stat"><div class="vtype-stat-label">Onboarded</div><div class="vtype-stat-value" style="color:#0F6E56">${k.onboarded}</div></div>
+        <div class="vtype-stat"><div class="vtype-stat-label">Open</div><div class="vtype-stat-value" style="color:#BA7517">${k.open}</div></div>
+        <div class="vtype-stat"><div class="vtype-stat-label">Closed</div><div class="vtype-stat-value" style="color:#5F5E5A">${k.closed}</div></div>
+        <div class="vtype-stat"><div class="vtype-stat-label">Conv %</div><div class="vtype-stat-value" style="color:#185FA5">${k.conv}%</div></div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+// === MAP ===
+const statusColors = {
+  'Onboarded': '#1D9E75',
+  'Open': '#EF9F27',
+  'Closed': '#888780',
+  "Doesn't Exist": '#E24B4A'
+}
+
+function renderMap() {
+  const pts = filteredData.filter(r => r.latitude && r.longitude)
+  document.getElementById('mapCount').textContent = pts.length + ' geotagged visits'
+
+  if (!map) {
+    map = L.map('mapContainer', { scrollWheelZoom: false })
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map)
+    markerLayer = L.layerGroup().addTo(map)
+    map.setView([26.8467, 80.9462], 6) // default center: UP
+  }
+
+  markerLayer.clearLayers()
+
+  if (pts.length === 0) return
+
+  pts.forEach(r => {
+    const color = statusColors[r.status] || '#888780'
+    const marker = L.circleMarker([r.latitude, r.longitude], {
+      radius: 7,
+      fillColor: color,
+      color: '#fff',
+      weight: 2,
+      fillOpacity: 0.9
+    })
+    const popupHtml = `
+      <b>${r.party_name || 'Unnamed'}</b><br>
+      ${r.status || ''}<br>
+      ${[r.town, r.district, r.state].filter(Boolean).join(', ')}<br>
+      ${r.agent_name ? 'Agent: ' + r.agent_name + '<br>' : ''}
+      ${r.submission_time ? new Date(r.submission_time).toLocaleString() : ''}
+    `
+    marker.bindPopup(popupHtml)
+    markerLayer.addLayer(marker)
+  })
+
+  // Fit bounds to markers
+  const bounds = L.latLngBounds(pts.map(r => [r.latitude, r.longitude]))
+  map.fitBounds(bounds, { padding: [30,30], maxZoom: 14 })
+}
+function switchDistrictTab(tab, el) {
+  districtTab = tab
+  document.querySelectorAll('#districtTable .tab').forEach(t => t.classList.remove('active'))
+  el.classList.add('active')
+  renderDistrictTable()
+}
+
+function renderDistrictTable() {
+  const src = districtTab === 'today' ? filteredData.filter(r => r.submission_time?.startsWith(today)) : filteredData
+  const districts = [...new Set(src.map(r => r.district).filter(Boolean))].sort()
+  document.getElementById('districtBody').innerHTML = districts.length ? districts.map(d => {
+    const rows = src.filter(r => r.district === d)
+    const k = kpiCalc(rows)
+    const pctClass = k.conv >= 30 ? 'pct-cell' : k.conv >= 15 ? 'pct-cell warn' : 'pct-cell low'
+    return `<tr><td>${d}</td><td class="num">${k.visited}</td><td class="num">${k.onboarded}</td><td class="num ${pctClass}">${k.conv}%</td></tr>`
+  }).join('') : '<tr><td colspan="4" class="empty">No data</td></tr>'
+}
+
+// === TEAM TABLE ===
+function switchTeamTab(tab, el) {
+  teamTab = tab
+  document.querySelectorAll('#teamTable .tab').forEach(t => t.classList.remove('active'))
+  el.classList.add('active')
+  renderTeamTable()
+}
+
+function renderTeamTable() {
+  const src = teamTab === 'today' ? filteredData.filter(r => r.submission_time?.startsWith(today)) : filteredData
+  const teams = [...new Set(src.map(r => r.sales_team).filter(Boolean))].sort()
+  document.getElementById('teamBody').innerHTML = teams.length ? teams.map(t => {
+    const rows = src.filter(r => r.sales_team === t)
+    const k = kpiCalc(rows)
+    const pctClass = k.conv >= 30 ? 'pct-cell' : k.conv >= 15 ? 'pct-cell warn' : 'pct-cell low'
+    return `<tr><td>${t}</td><td class="num">${k.visited}</td><td class="num">${k.onboarded}</td><td class="num ${pctClass}">${k.conv}%</td></tr>`
+  }).join('') : '<tr><td colspan="4" class="empty">No data</td></tr>'
+}
+
+// === CONFIG (auto-detect + optional override) ===
+let CONFIG = { statuses:{values:[],colors:{},onboardedValue:'Onboarded',openValue:'Open'}, villageTypes:{values:[],colors:{}}, states:{values:[]}, auditThresholds:{completedFraction:1.0} }
+
+async function loadConfig() {
+  try {
+    const res = await fetch('config/dashboard.json')
+    if (res.ok) {
+      const c = await res.json()
+      CONFIG = { ...CONFIG, ...c, statuses:{...CONFIG.statuses,...c.statuses}, villageTypes:{...CONFIG.villageTypes,...c.villageTypes} }
+    }
+  } catch(e) { /* no config = pure auto-detect */ }
+}
+
+function detectVillageTypes() {
+  const configured = (CONFIG.villageTypes.values||[]).filter(Boolean)
+  if (configured.length) return configured
+  return [...new Set([...assignedParties.map(p=>p.village_type), ...allData.map(r=>r.village_type)].filter(Boolean))].sort()
+}
+function vtypeColor(t) { return CONFIG.villageTypes.colors[t] || '#888780' }
+
+// === EXISTING VS NEW ===
+function existNewCalc(rows, type) {
+  const r = rows.filter(x => x.party_type === type)
+  const visited = r.length
+  const onboarded = r.filter(x=>x.status==='Onboarded').length
+  const open = r.filter(x=>x.status==='Open').length
+  const conv = visited>0?((onboarded/visited)*100).toFixed(1):'0.0'
+  return { visited, open, onboarded, conv }
+}
+function renderExistNew() {
+  const today = new Date().toISOString().split('T')[0]
+  const mkRows = (src) => ['Existing','New'].map(t => {
+    const k = existNewCalc(src, t)
+    return `<tr><td>${t}</td><td class="num">${k.visited}</td><td class="num">${k.open}</td><td class="num">${k.onboarded}</td><td class="num pct-cell">${k.conv}%</td></tr>`
+  }).join('')
+  document.getElementById('existNewOverallBody').innerHTML = mkRows(filteredData)
+  document.getElementById('existNewTodayBody').innerHTML = mkRows(filteredData.filter(r=>r.submission_time?.startsWith(today)))
+}
+
+// === TOWN ONBOARDING TRACKER ===
+// For each village type: classify each town into one of 4 states
+function classifyTown(townKey, partiesInTown, subsInTown) {
+  if (subsInTown.length === 0) return 'notVisited'
+  const anyOnboarded = subsInTown.some(s => s.status==='Onboarded')
+  const anyOpen = subsInTown.some(s => s.status==='Open')
+  if (anyOnboarded) return 'onboarded'
+  if (anyOpen) return 'openNotOnboarded'
+  return 'visitedNoOpen'
+}
+
+function getTownStats() {
+  // group assigned parties by town (district|tehsil|town)
+  const towns = {}
+  assignedParties.forEach(p => {
+    const key = `${p.state}|${p.district}|${p.town}`
+    if (activeState!=='ALL' && p.state!==activeState) return
+    if (activeVtype!=='ALL' && p.village_type!==activeVtype) return
+    if (!towns[key]) towns[key] = { state:p.state, district:p.district, tehsil:p.tehsil, town:p.town, vtype:p.village_type, parties:[], subs:[] }
+    towns[key].parties.push(p)
+  })
+  // attach submissions by town name match
+  filteredData.forEach(s => {
+    const key = `${s.state}|${s.district}|${s.town}`
+    if (towns[key]) towns[key].subs.push(s)
+  })
+  return towns
+}
+
+function renderTownTracker() {
+  const vtypes = detectVillageTypes()
+  const towns = Object.values(getTownStats())
+  const grid = document.getElementById('townTrackerGrid')
+  grid.innerHTML = vtypes.map(vt => {
+    const vtTowns = towns.filter(t => t.vtype===vt)
+    let nv=0,ob=0,op=0,vn=0
+    vtTowns.forEach(t => {
+      const c = classifyTown(t.town, t.parties, t.subs)
+      if (c==='notVisited')nv++; else if(c==='onboarded')ob++; else if(c==='openNotOnboarded')op++; else vn++
+    })
+    return `<div class="vtype-card">
+      <div class="vtype-header"><span class="vtype-title" style="color:${vtypeColor(vt)}">${vt}</span><span class="vtype-total">${vtTowns.length} towns</span></div>
+      <div class="vtype-stats">
+        <div class="vtype-stat"><div class="vtype-stat-label">Not visited</div><div class="vtype-stat-value" style="color:#888780">${nv}</div></div>
+        <div class="vtype-stat"><div class="vtype-stat-label">Onboarded ≥1</div><div class="vtype-stat-value" style="color:#0F6E56">${ob}</div></div>
+        <div class="vtype-stat"><div class="vtype-stat-label">Open, none onb.</div><div class="vtype-stat-value" style="color:#BA7517">${op}</div></div>
+        <div class="vtype-stat"><div class="vtype-stat-label">Visited, no open</div><div class="vtype-stat-value" style="color:#A32D2D">${vn}</div></div>
+      </div>
+    </div>`
+  }).join('') || '<div class="empty">No assigned parties loaded yet</div>'
+}
+
+// === TOWN COMBO STATUS TABLE ===
+function renderComboTable() {
+  const search = (document.getElementById('comboSearch')?.value||'').toLowerCase()
+  const towns = Object.values(getTownStats())
+  const trackerLabel = { notVisited:'Not visited', onboarded:'Onboarded ≥1', openNotOnboarded:'Open, none onboarded', visitedNoOpen:'Visited, no open' }
+  const trackerColor = { notVisited:'#888780', onboarded:'#0F6E56', openNotOnboarded:'#BA7517', visitedNoOpen:'#A32D2D' }
+  let rows = towns
+  if (search) rows = rows.filter(t => [t.town,t.tehsil,t.district].some(v=>v?.toLowerCase().includes(search)))
+  rows.sort((a,b)=>(`${a.district}${a.tehsil}${a.town}`).localeCompare(`${b.district}${b.tehsil}${b.town}`))
+  document.getElementById('comboBody').innerHTML = rows.length ? rows.map(t => {
+    const cls = classifyTown(t.town, t.parties, t.subs)
+    const visited = t.subs.length
+    const open = t.subs.filter(s=>s.status==='Open').length
+    const onb = t.subs.filter(s=>s.status==='Onboarded').length
+    const closed = t.subs.filter(s=>s.status==='Closed').length
+    return `<tr>
+      <td>${t.district||'—'}</td><td>${t.tehsil||'—'}</td><td>${t.town||'—'}</td>
+      <td><span class="status-badge" style="background:#F1EFE8;color:#5F5E5A">${t.vtype||'—'}</span></td>
+      <td><span class="status-badge" style="background:${trackerColor[cls]}22;color:${trackerColor[cls]}">${trackerLabel[cls]}</span></td>
+      <td class="num">${t.parties.length}</td><td class="num">${visited}</td><td class="num">${open}</td><td class="num">${onb}</td><td class="num">${closed}</td>
+    </tr>`
+  }).join('') : '<tr><td colspan="10" class="empty">No towns match</td></tr>'
+}
+
+// === HIERARCHY TABLE ===
+function renderHierarchy() {
+  const search = document.getElementById('hierarchySearch').value.toLowerCase()
+  const rows = filteredData.filter(r => {
+    if (!search) return true
+    return [r.district, r.tehsil, r.town].some(v => v?.toLowerCase().includes(search))
+  })
+  const groups = {}
+  rows.forEach(r => {
+    const key = `${r.district}|${r.tehsil}|${r.town}`
+    if (!groups[key]) groups[key] = { district: r.district, tehsil: r.tehsil, town: r.town, type: r.village_type, rows: [] }
+    groups[key].rows.push(r)
+  })
+  const sorted = Object.values(groups).sort((a,b) => (a.district+a.tehsil+a.town).localeCompare(b.district+b.tehsil+b.town))
+  document.getElementById('hierarchyBody').innerHTML = sorted.length ? sorted.map(g => {
+    const k = kpiCalc(g.rows)
+    const pctClass = k.conv >= 30 ? 'pct-cell' : k.conv >= 15 ? 'pct-cell warn' : 'pct-cell low'
+    return `<tr>
+      <td>${g.district||'—'}</td><td>${g.tehsil||'—'}</td><td>${g.town||'—'}</td>
+      <td><span class="status-badge" style="background:#F1EFE8;color:#5F5E5A">${g.type||'—'}</span></td>
+      <td class="num">${k.visited}</td><td class="num">${k.onboarded}</td><td class="num">${k.open}</td>
+      <td class="num ${pctClass}">${k.conv}%</td>
+    </tr>`
+  }).join('') : '<tr><td colspan="8" class="empty">No data</td></tr>'
+}
+
+// === PARTY LIST ===
+function renderPartyList() {
+  const search = document.getElementById('partySearch').value.toLowerCase()
+  const statusF = document.getElementById('partyStatusFilter').value
+  const typeF = document.getElementById('partyTypeFilter').value
+  const rows = filteredData.filter(r => {
+    if (statusF && r.status !== statusF) return false
+    if (typeF && r.party_type !== typeF) return false
+    if (search && ![r.party_name, r.owner_name, r.phone, r.town].some(v => v?.toLowerCase().includes(search))) return false
+    return true
+  })
+  const badgeClass = s => s === 'Onboarded' ? 'badge-onboarded' : s === 'Open' ? 'badge-open' : s === 'Closed' ? 'badge-closed' : 'badge-doesnt'
+  document.getElementById('partyGrid').innerHTML = rows.length ? rows.slice(0,100).map(r =>
+    `<div class="party-card">
+      ${r.photo_url
+        ? `<img class="party-photo" src="${r.photo_url}" alt="${r.party_name||''}" loading="lazy">`
+        : `<div class="party-photo">No photo</div>`}
+      <div class="party-info">
+        <div class="party-name">${r.party_name||'—'}</div>
+        <div class="party-meta">
+          <span><span class="status-badge ${badgeClass(r.status)}">${r.status||'—'}</span></span>
+          <span>${r.owner_name||''} ${r.phone ? '· ' + r.phone : ''}</span>
+          <span>${[r.town, r.district, r.state].filter(Boolean).join(', ')}</span>
+          <span style="color:#9C9A92">${r.sales_team||''} · ${r.party_type||''}</span>
+          ${r.latitude && r.longitude
+            ? `<span style="color:#9C9A92"><a href="https://maps.google.com/?q=${r.latitude},${r.longitude}" target="_blank" style="color:#378ADD;text-decoration:none">📍 ${r.latitude.toFixed(5)}, ${r.longitude.toFixed(5)}</a></span>`
+            : `<span style="color:#9C9A92">📍 No GPS</span>`}
+        </div>
+      </div>
+    </div>`
+  ).join('') : '<div class="empty">No parties match the filter</div>'
+}
+
+// === EXCEL EXPORT ===
+function exportExcel() {
+  const rows = filteredData.map(r => ({
+    'Submission Time': r.submission_time,
+    'Agent': r.agent_name,
+    'Party Name': r.party_name,
+    'Party Type': r.party_type,
+    'RTR ID': r.rtr_id,
+    'Status': r.status,
+    'Owner': r.owner_name,
+    'Phone': r.phone,
+    'State': r.state,
+    'District': r.district,
+    'Tehsil': r.tehsil,
+    'Town': r.town,
+    'Village Type': r.village_type,
+    'Sales Team': r.sales_team,
+    'Outlet Universe': r.estimated_outlet_universe,
+    'Activation Date': r.estimated_activation_date,
+    'Latitude': r.latitude,
+    'Longitude': r.longitude,
+    'Remarks': r.remarks
+  }))
+  const ws = XLSX.utils.json_to_sheet(rows)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Submissions')
+  XLSX.writeFile(wb, `party_onboarding_${today}.xlsx`)
+}
+
+// === INIT ===
+loadConfig().then(loadData)
+setInterval(loadData, 120000) // auto-refresh every 2 minutes
+</script>
+</body>
+</html>

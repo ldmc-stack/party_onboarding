@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0F6E56">
+<link rel="manifest" href="manifest.json">
+<title>Party Validation</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:#FBFAF7;color:#1a1a1a;min-height:100vh}
+.header{background:#0F6E56;color:#fff;padding:12px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:15px;font-weight:500}
+.header-sub{font-size:11px;opacity:0.85;margin-top:2px}
+.badge{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500;background:rgba(255,255,255,0.2)}
+.badge.locked{background:#1D9E75}
+.switch-btn{background:rgba(255,255,255,0.15);border:none;color:#fff;padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit}
+
+/* SCREENS */
+.screen{display:none}
+.screen.active{display:block}
+
+/* LOGIN */
+.login-wrap{padding:40px 20px;max-width:420px;margin:0 auto}
+.login-card{background:#fff;border-radius:16px;border:0.5px solid #E5E3DC;padding:28px 22px}
+.login-logo{width:52px;height:52px;background:#0F6E56;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px}
+.login-card h2{font-size:18px;font-weight:500;text-align:center;margin-bottom:4px}
+.login-card p{font-size:13px;color:#73726C;text-align:center;margin-bottom:20px}
+.search-box{position:relative;margin-bottom:8px}
+.search-box input{width:100%;border:0.5px solid #D3D1C7;border-radius:10px;padding:12px 14px;font-size:15px;font-family:inherit;outline:none;background:#F8F7F4}
+.search-box input:focus{border-color:#0F6E56;background:#fff}
+.salesman-list{max-height:280px;overflow-y:auto;border-radius:10px;border:0.5px solid #E5E3DC;margin-top:8px}
+.salesman-item{padding:13px 16px;font-size:14px;border-bottom:0.5px solid #F1EFE8;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.salesman-item:last-child{border-bottom:none}
+.salesman-item:active{background:#F0FAF5}
+.salesman-item .count{font-size:12px;color:#9C9A92}
+
+/* PARTY LIST */
+.tabs{display:flex;background:#fff;border-bottom:0.5px solid #E5E3DC;position:sticky;top:53px;z-index:90}
+.tab{flex:1;padding:13px;text-align:center;font-size:13px;color:#73726C;cursor:pointer;border-bottom:2px solid transparent;font-weight:500}
+.tab.active{color:#0F6E56;border-bottom-color:#0F6E56}
+.tab .tab-count{display:inline-block;background:#F1EFE8;color:#5F5E5A;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px}
+.tab.active .tab-count{background:#E5F4ED;color:#0F6E56}
+
+.list-controls{padding:10px 14px;background:#FBFAF7;display:flex;gap:8px;position:sticky;top:97px;z-index:80}
+.list-search{flex:1;border:0.5px solid #E5E3DC;border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff}
+.list-search:focus{border-color:#0F6E56}
+.sort-btn{border:0.5px solid #E5E3DC;border-radius:8px;padding:8px 10px;font-size:12px;background:#fff;cursor:pointer;font-family:inherit;white-space:nowrap}
+
+.party-list{padding:12px 14px 100px}
+.party-item{background:#fff;border-radius:12px;border:0.5px solid #E5E3DC;padding:14px;margin-bottom:10px;cursor:pointer;transition:all 0.15s}
+.party-item:active{transform:scale(0.99);border-color:#0F6E56}
+.party-item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.party-item-name{font-size:15px;font-weight:500;flex:1}
+.cat-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;margin-left:8px}
+.cat-P1{background:#E5F4ED;color:#0F6E56}
+.cat-P2{background:#E6F1FB;color:#185FA5}
+.cat-P3{background:#FAEEDA;color:#854F0B}
+.cat-DHQ{background:#EEEDFE;color:#3C3489}
+.party-item-meta{font-size:12px;color:#73726C;display:flex;flex-direction:column;gap:3px}
+.party-item-row{display:flex;align-items:center;gap:6px}
+.dist-pill{font-size:11px;background:#F1EFE8;color:#5F5E5A;padding:2px 8px;border-radius:10px}
+.status-tag{font-size:11px;font-weight:500;padding:2px 8px;border-radius:5px}
+.st-Onboarded{background:#E5F4ED;color:#0F6E56}
+.st-Open{background:#FAEEDA;color:#854F0B}
+.st-Closed{background:#F1EFE8;color:#5F5E5A}
+.st-NotAvail{background:#FCEBEB;color:#A32D2D}
+
+.empty{padding:50px 20px;text-align:center;color:#9C9A92;font-size:13px}
+
+/* FAB */
+.fab{position:fixed;bottom:20px;right:16px;background:#0F6E56;color:#fff;border:none;border-radius:14px;padding:14px 18px;font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;box-shadow:0 4px 16px rgba(15,110,86,0.35);display:flex;align-items:center;gap:6px;z-index:95}
+
+/* VALIDATION / NEW PARTY FORM */
+.form-screen{padding-bottom:100px}
+.form-bar{background:#fff;padding:12px 16px;border-bottom:0.5px solid #E5E3DC;display:flex;align-items:center;gap:10px;position:sticky;top:53px;z-index:90}
+.form-back{background:none;border:none;font-size:20px;cursor:pointer;color:#5F5E5A;padding:0}
+.form-bar-title{font-size:15px;font-weight:500}
+.form-bar-sub{font-size:11px;color:#73726C}
+.section{background:#fff;margin:12px;border-radius:12px;border:0.5px solid #E5E3DC;overflow:hidden}
+.section-title{font-size:11px;font-weight:500;color:#73726C;text-transform:uppercase;letter-spacing:0.5px;padding:12px 16px 8px}
+.field{padding:8px 16px 12px}
+.field label{font-size:12px;color:#73726C;display:block;margin-bottom:6px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;background:#F8F7F4;border:0.5px solid #E5E3DC;border-radius:8px;padding:10px 12px;font-size:14px;color:#1a1a1a;font-family:inherit;outline:none;-webkit-appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#0F6E56;background:#fff}
+.field textarea{height:80px;resize:none}
+.req{color:#E24B4A}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:9px 14px;border-radius:8px;border:1px solid #E5E3DC;background:#fff;font-size:13px;color:#5F5E5A;cursor:pointer;user-select:none}
+.chip:active{transform:scale(0.97)}
+.chip.sel-on{background:#0F6E56;border-color:#0F6E56;color:#fff}
+.chip.sel-amber{background:#BA7517;border-color:#BA7517;color:#fff}
+.chip.sel-gray{background:#5F5E5A;border-color:#5F5E5A;color:#fff}
+.chip.sel-red{background:#A32D2D;border-color:#A32D2D;color:#fff}
+.chip.sel-teal{background:#0F6E56;border-color:#0F6E56;color:#fff}
+.party-banner{background:#F0FAF5;border:0.5px solid #1D9E75;border-radius:10px;padding:12px 14px;margin:12px;font-size:13px}
+.party-banner b{display:block;font-size:15px;margin-bottom:3px}
+.party-banner .pb-meta{color:#5F5E5A;font-size:12px}
+
+.photo-area{padding:8px 16px 14px}
+.photo-btn{width:100%;background:#F8F7F4;border:1.5px dashed #B4B2A9;border-radius:10px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;color:#73726C;font-size:13px}
+.photo-preview{width:100%;border-radius:10px;overflow:hidden;display:none}
+.photo-preview img{width:100%;height:180px;object-fit:cover;display:block}
+.photo-retake{width:100%;margin-top:6px;background:#fff;border:0.5px solid #E5E3DC;border-radius:8px;padding:8px;font-size:12px;color:#73726C;cursor:pointer;text-align:center}
+#photoInput,#newPhotoInput{display:none}
+
+.submit-wrap{position:fixed;bottom:0;left:0;right:0;padding:12px 16px;background:#FBFAF7;border-top:0.5px solid #E5E3DC;z-index:95}
+.submit-btn{width:100%;background:#0F6E56;color:#fff;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:500;font-family:inherit;cursor:pointer}
+.submit-btn:disabled{opacity:0.6}
+
+.toast{position:fixed;top:70px;left:16px;right:16px;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;z-index:200;display:none;text-align:center}
+.toast.success{background:#E5F4ED;color:#0F6E56;border:1px solid #1D9E75}
+.toast.error{background:#FCEBEB;color:#A32D2D;border:1px solid #E24B4A}
+.toast.info{background:#E6F1FB;color:#185FA5;border:1px solid #378ADD}
+.hidden{display:none!important}
+.loader{padding:50px;text-align:center;color:#73726C;font-size:13px}
+.spinner{width:28px;height:28px;border:3px solid #E5E3DC;border-top-color:#0F6E56;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN SCREEN -->
+<div class="screen active" id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">🏪</div>
+      <h2>Party Validation</h2>
+      <p>Select your name to see your assigned parties</p>
+      <div class="search-box">
+        <input type="text" id="salesmanSearch" placeholder="Search your name..." oninput="filterSalesmen()" autocomplete="off">
+      </div>
+      <div class="salesman-list" id="salesmanList">
+        <div class="loader"><div class="spinner"></div>Loading salesmen...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PARTY LIST SCREEN -->
+<div class="screen" id="listScreen">
+  <div class="header">
+    <div>
+      <h1 id="listSalesmanName">—</h1>
+      <div class="header-sub"><span class="badge" id="gpsStatus">GPS...</span> <span id="listSummary"></span></div>
+    </div>
+    <button class="switch-btn" onclick="logout()">Switch</button>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('pending',this)">Pending <span class="tab-count" id="pendingCount">0</span></div>
+    <div class="tab" onclick="switchTab('done',this)">Done <span class="tab-count" id="doneCount">0</span></div>
+  </div>
+  <div class="list-controls">
+    <input class="list-search" id="listSearch" placeholder="Search party or town..." oninput="renderPartyList()">
+    <button class="sort-btn" id="sortBtn" onclick="toggleSort()">↕ Nearest</button>
+  </div>
+  <div class="party-list" id="partyListContainer"></div>
+  <button class="fab" onclick="openNewParty()">＋ New party</button>
+</div>
+
+<!-- VALIDATION FORM SCREEN -->
+<div class="screen" id="validateScreen">
+  <div class="header">
+    <div><h1>Validate party</h1></div>
+    <span class="badge locked" id="vGpsStatus">GPS</span>
+  </div>
+  <div class="form-screen">
+    <div class="party-banner" id="vBanner"></div>
+
+    <div class="section">
+      <div class="section-title">Status <span class="req">*</span></div>
+      <div class="field">
+        <div class="chips" id="vStatusChips">
+          <div class="chip" onclick="vSelectStatus('Onboarded',this)">Onboarded</div>
+          <div class="chip" onclick="vSelectStatus('Open',this)">Open</div>
+          <div class="chip" onclick="vSelectStatus('Closed',this)">Closed</div>
+          <div class="chip" onclick="vSelectStatus('Not Available',this)">Not available</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section hidden" id="vOnboardSection">
+      <div class="section-title">Onboarding details</div>
+      <div class="field"><label>Owner name</label><input type="text" id="vOwner" autocomplete="off"></div>
+      <div class="field"><label>Phone</label><input type="tel" id="vPhone" maxlength="10" autocomplete="off"></div>
+      <div class="field"><label>Party type</label>
+        <div class="chips" id="vTypeChips">
+          <div class="chip" onclick="vSelectType('New',this)">New</div>
+          <div class="chip" onclick="vSelectType('Existing',this)">Existing</div>
+        </div>
+      </div>
+      <div class="field"><label>Activation date</label><input type="date" id="vActivation"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Remarks <span class="req" id="vRemarksReq">*</span></div>
+      <div class="field"><textarea id="vRemarks" placeholder="Notes about this visit / status..."></textarea></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Photo</div>
+      <div class="photo-area">
+        <div class="photo-btn" id="vPhotoBtn" onclick="document.getElementById('photoInput').click()">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>Take photo</span><span style="font-size:11px;opacity:0.7">GPS & time stamped</span>
+        </div>
+        <div class="photo-preview" id="vPhotoPreview"><img id="vPhotoImg" src="" alt="photo"><div class="photo-retake" onclick="document.getElementById('photoInput').click()">Retake</div></div>
+        <input type="file" id="photoInput" accept="image/*" capture="environment" onchange="onPhoto(event,'v')">
+      </div>
+    </div>
+  </div>
+  <div class="submit-wrap"><button class="submit-btn" id="vSubmitBtn" onclick="submitValidation()">Submit validation</button></div>
+</div>
+
+<!-- NEW PARTY FORM SCREEN -->
+<div class="screen" id="newScreen">
+  <div class="header"><div><h1>New party</h1><div class="header-sub">Not on your assigned list</div></div><span class="badge locked" id="nGpsStatus">GPS</span></div>
+  <div class="form-screen">
+    <div class="section">
+      <div class="section-title">Party info</div>
+      <div class="field"><label>Party name <span class="req">*</span></label><input type="text" id="nName" placeholder="Shop / party name" autocomplete="off"></div>
+      <div class="field"><label>Owner name</label><input type="text" id="nOwner" autocomplete="off"></div>
+      <div class="field"><label>Phone</label><input type="tel" id="nPhone" maxlength="10" autocomplete="off"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Area (town code)</div>
+      <div class="field"><label>Town code (CID)</label>
+        <select id="nCid"><option value="">Select your area...</option></select>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Status <span class="req">*</span></div>
+      <div class="field"><div class="chips" id="nStatusChips">
+        <div class="chip" onclick="nSelectStatus('Onboarded',this)">Onboarded</div>
+        <div class="chip" onclick="nSelectStatus('Open',this)">Open</div>
+        <div class="chip" onclick="nSelectStatus('Closed',this)">Closed</div>
+      </div></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Remarks</div>
+      <div class="field"><textarea id="nRemarks" placeholder="Notes..."></textarea></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Photo</div>
+      <div class="photo-area">
+        <div class="photo-btn" id="nPhotoBtn" onclick="document.getElementById('newPhotoInput').click()">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>Take photo</span><span style="font-size:11px;opacity:0.7">GPS & time stamped</span>
+        </div>
+        <div class="photo-preview" id="nPhotoPreview"><img id="nPhotoImg" src="" alt="photo"><div class="photo-retake" onclick="document.getElementById('newPhotoInput').click()">Retake</div></div>
+        <input type="file" id="newPhotoInput" accept="image/*" capture="environment" onchange="onPhoto(event,'n')">
+      </div>
+    </div>
+    <div class="form-bar" style="position:static;background:transparent;border:none">
+      <button class="form-back" onclick="showScreen('listScreen')">← Back to list</button>
+    </div>
+  </div>
+  <div class="submit-wrap"><button class="submit-btn" id="nSubmitBtn" onclick="submitNewParty()">Submit new party</button></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://tzejrlkclshjofqgcsrw.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWpybGtjbHNoam9mcWdjc3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDgwMjAsImV4cCI6MjA5NjU4NDAyMH0.vxlWh1-ptyTKJCaaluPFX1hJ1UlqFnumBD075Nfh100'
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+let gpsCoords = null
+let salesmen = []
+let myParties = []
+let mySubmissions = {}
+let myCids = []
+let currentTab = 'pending'
+let sortByDistance = true
+let currentParty = null
+let photoBlob = null
+let vStatus = null, vType = null, nStatus = null
+
+// GPS
+function startGPS() {
+  if (!navigator.geolocation) return
+  navigator.geolocation.watchPosition(p => {
+    gpsCoords = { lat:p.coords.latitude, lng:p.coords.longitude }
+    ;['gpsStatus','vGpsStatus','nGpsStatus'].forEach(id => { const e=document.getElementById(id); if(e){e.textContent='GPS locked';e.classList.add('locked')} })
+    if (currentTab && document.getElementById('listScreen').classList.contains('active')) renderPartyList()
+  }, ()=>{ const e=document.getElementById('gpsStatus'); if(e)e.textContent='No GPS' }, { enableHighAccuracy:true, maximumAge:30000 })
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
+  document.getElementById(id).classList.add('active')
+  window.scrollTo(0,0)
+}
+
+// === LOAD SALESMEN ===
+async function loadSalesmen() {
+  const { data, error } = await sb.from('cid_master').select('salesman').not('salesman','is',null)
+  if (error) { document.getElementById('salesmanList').innerHTML = '<div class="empty">Error loading. Check connection.</div>'; return }
+  const counts = {}
+  ;(data||[]).forEach(r => { if(r.salesman) counts[r.salesman]=(counts[r.salesman]||0)+1 })
+  salesmen = Object.keys(counts).sort().map(name => ({ name, cidCount: counts[name] }))
+  renderSalesmen(salesmen)
+}
+function renderSalesmen(list) {
+  const el = document.getElementById('salesmanList')
+  if (!list.length) { el.innerHTML = '<div class="empty">No salesmen found. Upload CID master in admin first.</div>'; return }
+  el.innerHTML = list.map(s =>
+    `<div class="salesman-item" onclick="login('${s.name.replace(/'/g,"\\'")}')"><span>${s.name}</span><span class="count">${s.cidCount} areas</span></div>`
+  ).join('')
+}
+function filterSalesmen() {
+  const q = document.getElementById('salesmanSearch').value.toLowerCase()
+  renderSalesmen(salesmen.filter(s => s.name.toLowerCase().includes(q)))
+}
+
+// === LOGIN ===
+async function login(name) {
+  localStorage.setItem('salesman', name)
+  await loadMyData(name)
+  showScreen('listScreen')
+}
+function logout() { localStorage.removeItem('salesman'); showScreen('loginScreen'); document.getElementById('salesmanSearch').value=''; filterSalesmen() }
+
+async function loadMyData(name) {
+  document.getElementById('listSalesmanName').textContent = name
+  document.getElementById('partyListContainer').innerHTML = '<div class="loader"><div class="spinner"></div>Loading your parties...</div>'
+
+  // get my CIDs
+  const { data: cids } = await sb.from('cid_master').select('cid,town,tehsil,district').eq('salesman', name)
+  myCids = cids || []
+  const cidList = myCids.map(c => c.cid)
+
+  if (!cidList.length) { document.getElementById('partyListContainer').innerHTML='<div class="empty">No areas assigned to you yet.</div>'; return }
+
+  // get parties in my CIDs
+  const { data: parties } = await sb.from('assigned_parties').select('*').in('cid', cidList)
+  myParties = parties || []
+
+  // get my submissions to know which are done
+  const { data: subs } = await sb.from('submissions').select('party_id,status').eq('salesman', name).not('party_id','is',null)
+  mySubmissions = {}
+  ;(subs||[]).forEach(s => { if(s.party_id) mySubmissions[s.party_id]=s.status })
+
+  // populate new-party CID dropdown
+  const nCid = document.getElementById('nCid')
+  nCid.innerHTML = '<option value="">Select your area...</option>' + myCids.sort((a,b)=>(a.town||'').localeCompare(b.town||'')).map(c =>
+    `<option value="${c.cid}">${c.town||c.cid} (${c.cid})</option>`
+  ).join('')
+
+  updateCounts()
+  renderPartyList()
+}
+
+function updateCounts() {
+  const done = myParties.filter(p => mySubmissions[p.party_id]).length
+  const pending = myParties.length - done
+  document.getElementById('pendingCount').textContent = pending
+  document.getElementById('doneCount').textContent = done
+  document.getElementById('listSummary').textContent = `${myParties.length} parties · ${myCids.length} areas`
+}
+
+// === DISTANCE ===
+function distance(lat1,lng1,lat2,lng2) {
+  if (!lat1||!lng1||!lat2||!lng2) return Infinity
+  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180
+  const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))
+}
+function fmtDist(km) { if(km===Infinity)return ''; return km<1?`${Math.round(km*1000)} m`:`${km.toFixed(1)} km` }
+
+// === TABS & LIST ===
+function switchTab(tab,el) { currentTab=tab; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); renderPartyList() }
+function toggleSort() { sortByDistance=!sortByDistance; document.getElementById('sortBtn').textContent=sortByDistance?'↕ Nearest':'↕ Name'; renderPartyList() }
+
+function renderPartyList() {
+  const q = document.getElementById('listSearch').value.toLowerCase()
+  let list = myParties.filter(p => {
+    const isDone = !!mySubmissions[p.party_id]
+    if (currentTab==='pending' && isDone) return false
+    if (currentTab==='done' && !isDone) return false
+    if (q && ![p.party_name,p.town].some(v=>v?.toLowerCase().includes(q))) return false
+    return true
+  })
+  list.forEach(p => p._dist = gpsCoords ? distance(gpsCoords.lat,gpsCoords.lng,p.party_lat,p.party_long) : Infinity)
+  if (sortByDistance) list.sort((a,b)=>a._dist-b._dist)
+  else list.sort((a,b)=>(a.party_name||'').localeCompare(b.party_name||''))
+
+  const cont = document.getElementById('partyListContainer')
+  if (!list.length) { cont.innerHTML=`<div class="empty">${currentTab==='pending'?'All parties validated! 🎉':'No validated parties yet.'}</div>`; return }
+
+  cont.innerHTML = list.map(p => {
+    const status = mySubmissions[p.party_id]
+    const stClass = status==='Onboarded'?'st-Onboarded':status==='Open'?'st-Open':status==='Closed'?'st-Closed':'st-NotAvail'
+    const cat = p.village_type||''
+    return `<div class="party-item" onclick="openValidate('${p.party_id}')">
+      <div class="party-item-top">
+        <span class="party-item-name">${p.party_name}</span>
+        ${cat?`<span class="cat-badge cat-${cat}">${cat}</span>`:''}
+      </div>
+      <div class="party-item-meta">
+        <span class="party-item-row">📍 ${[p.town,p.district].filter(Boolean).join(', ')}</span>
+        <span class="party-item-row">
+          ${p._dist!==Infinity?`<span class="dist-pill">${fmtDist(p._dist)} away</span>`:''}
+          ${status?`<span class="status-tag ${stClass}">${status}</span>`:''}
+        </span>
+      </div>
+    </div>`
+  }).join('')
+}
+
+// === VALIDATE ===
+function openValidate(partyId) {
+  currentParty = myParties.find(p => p.party_id===partyId)
+  if (!currentParty) return
+  photoBlob=null; vStatus=null; vType=null
+  document.getElementById('vBanner').innerHTML = `<b>${currentParty.party_name}</b><span class="pb-meta">${[currentParty.town,currentParty.district].filter(Boolean).join(', ')} · ${currentParty.village_type||''} · CID ${currentParty.cid}${currentParty.phone?' · '+currentParty.phone:''}</span>`
+  document.querySelectorAll('#vStatusChips .chip').forEach(c=>c.className='chip')
+  document.querySelectorAll('#vTypeChips .chip').forEach(c=>c.className='chip')
+  document.getElementById('vOwner').value=currentParty.owner_name||''
+  document.getElementById('vPhone').value=currentParty.phone||''
+  document.getElementById('vRemarks').value=''
+  document.getElementById('vActivation').value=''
+  document.getElementById('vOnboardSection').classList.add('hidden')
+  document.getElementById('vPhotoPreview').style.display='none'
+  document.getElementById('vPhotoBtn').style.display='flex'
+  document.getElementById('photoInput').value=''
+  showScreen('validateScreen')
+}
+
+function vSelectStatus(status,el) {
+  vStatus=status
+  document.querySelectorAll('#vStatusChips .chip').forEach(c=>c.className='chip')
+  el.classList.add(status==='Onboarded'?'sel-on':status==='Open'?'sel-amber':status==='Closed'?'sel-gray':'sel-red')
+  document.getElementById('vOnboardSection').classList.toggle('hidden', status!=='Onboarded')
+}
+function vSelectType(type,el) { vType=type; document.querySelectorAll('#vTypeChips .chip').forEach(c=>c.className='chip'); el.classList.add('sel-teal') }
+
+async function submitValidation() {
+  if (!vStatus) { toast('error','Select a status'); return }
+  if (!document.getElementById('vRemarks').value.trim()) { toast('error','Remarks are required'); return }
+  const btn=document.getElementById('vSubmitBtn'); btn.disabled=true; btn.textContent='Submitting...'
+  try {
+    let photoUrl = await uploadPhoto()
+    const payload = {
+      party_id: currentParty.party_id,
+      cid: currentParty.cid,
+      source: 'assigned',
+      salesman: localStorage.getItem('salesman'),
+      agent_name: localStorage.getItem('salesman'),
+      party_name: currentParty.party_name,
+      party_type: vType,
+      status: vStatus,
+      owner_name: document.getElementById('vOwner').value.trim()||null,
+      phone: document.getElementById('vPhone').value.trim()||null,
+      state: currentParty.state, district: currentParty.district,
+      tehsil: currentParty.tehsil, town: currentParty.town,
+      village_type: currentParty.village_type,
+      estimated_activation_date: document.getElementById('vActivation').value||null,
+      remarks: document.getElementById('vRemarks').value.trim(),
+      latitude: gpsCoords?.lat||null, longitude: gpsCoords?.lng||null,
+      photo_url: photoUrl, submission_time: new Date().toISOString()
+    }
+    const { error } = await sb.from('submissions').insert(payload)
+    if (error) throw error
+    mySubmissions[currentParty.party_id]=vStatus
+    updateCounts()
+    toast('success','Validation submitted!')
+    showScreen('listScreen'); renderPartyList()
+  } catch(e) { console.error(e); toast('error','Failed. Try again.') }
+  finally { btn.disabled=false; btn.textContent='Submit validation' }
+}
+
+// === NEW PARTY ===
+function openNewParty() {
+  photoBlob=null; nStatus=null
+  document.getElementById('nName').value=''
+  document.getElementById('nOwner').value=''
+  document.getElementById('nPhone').value=''
+  document.getElementById('nCid').value=''
+  document.getElementById('nRemarks').value=''
+  document.querySelectorAll('#nStatusChips .chip').forEach(c=>c.className='chip')
+  document.getElementById('nPhotoPreview').style.display='none'
+  document.getElementById('nPhotoBtn').style.display='flex'
+  document.getElementById('newPhotoInput').value=''
+  showScreen('newScreen')
+}
+function nSelectStatus(status,el) { nStatus=status; document.querySelectorAll('#nStatusChips .chip').forEach(c=>c.className='chip'); el.classList.add(status==='Onboarded'?'sel-on':status==='Open'?'sel-amber':'sel-gray') }
+
+async function submitNewParty() {
+  const name=document.getElementById('nName').value.trim()
+  if (!name) { toast('error','Party name required'); return }
+  if (!nStatus) { toast('error','Select a status'); return }
+  const cid = document.getElementById('nCid').value
+  const cidInfo = myCids.find(c=>String(c.cid)===String(cid))
+  const btn=document.getElementById('nSubmitBtn'); btn.disabled=true; btn.textContent='Submitting...'
+  try {
+    let photoUrl = await uploadPhoto()
+    const payload = {
+      party_id: null, cid: cid?parseInt(cid):null, source:'new',
+      salesman: localStorage.getItem('salesman'), agent_name: localStorage.getItem('salesman'),
+      party_name: name, status: nStatus,
+      owner_name: document.getElementById('nOwner').value.trim()||null,
+      phone: document.getElementById('nPhone').value.trim()||null,
+      town: cidInfo?.town||null, district: cidInfo?.district||null, tehsil: cidInfo?.tehsil||null,
+      remarks: document.getElementById('nRemarks').value.trim()||null,
+      latitude: gpsCoords?.lat||null, longitude: gpsCoords?.lng||null,
+      photo_url: photoUrl, submission_time: new Date().toISOString()
+    }
+    const { error } = await sb.from('submissions').insert(payload)
+    if (error) throw error
+    toast('success','New party added!')
+    showScreen('listScreen')
+  } catch(e) { console.error(e); toast('error','Failed. Try again.') }
+  finally { btn.disabled=false; btn.textContent='Submit new party' }
+}
+
+// === PHOTO (shared) ===
+function onPhoto(e,which) {
+  const file=e.target.files[0]; if(!file)return
+  compressGeotag(file, blob => {
+    photoBlob=blob
+    const url=URL.createObjectURL(blob)
+    if (which==='v') { document.getElementById('vPhotoImg').src=url; document.getElementById('vPhotoPreview').style.display='block'; document.getElementById('vPhotoBtn').style.display='none' }
+    else { document.getElementById('nPhotoImg').src=url; document.getElementById('nPhotoPreview').style.display='block'; document.getElementById('nPhotoBtn').style.display='none' }
+  })
+}
+function compressGeotag(file,cb) {
+  const reader=new FileReader()
+  reader.onload=e=>{
+    const img=new Image()
+    img.onload=()=>{
+      const canvas=document.createElement('canvas')
+      const MAX=1280; let w=img.width,h=img.height
+      if(w>MAX){h=h*MAX/w;w=MAX} if(h>MAX){w=w*MAX/h;h=MAX}
+      canvas.width=w;canvas.height=h
+      const ctx=canvas.getContext('2d')
+      ctx.drawImage(img,0,0,w,h)
+      const now=new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})
+      const pname=(currentParty?.party_name)||document.getElementById('nName')?.value||'Party'
+      const gpsLine=gpsCoords?`Lat ${gpsCoords.lat.toFixed(6)}, Long ${gpsCoords.lng.toFixed(6)}`:'GPS not available'
+      const lines=[pname,gpsLine,now]
+      const pad=Math.round(w*0.025),lineH=Math.round(w*0.036),fs=Math.round(w*0.03)
+      const boxH=pad*2+lineH*lines.length
+      ctx.fillStyle='rgba(0,0,0,0.55)';ctx.fillRect(0,h-boxH,w,boxH)
+      ctx.fillStyle='#fff';ctx.textBaseline='middle'
+      lines.forEach((l,i)=>{ctx.font=(i===0?`bold ${fs}px`:`${fs*0.9}px`)+' Arial,sans-serif';ctx.fillText(l,pad,h-boxH+pad+lineH*i+lineH/2)})
+      canvas.toBlob(cb,'image/jpeg',0.82)
+    }
+    img.src=e.target.result
+  }
+  reader.readAsDataURL(file)
+}
+async function uploadPhoto() {
+  if (!photoBlob) return null
+  const sm=(localStorage.getItem('salesman')||'x').replace(/\s/g,'_')
+  const fn=`submissions/${Date.now()}_${sm}.jpg`
+  const { error } = await sb.storage.from('party-photos').upload(fn,photoBlob,{contentType:'image/jpeg'})
+  if (error) return null
+  return sb.storage.from('party-photos').getPublicUrl(fn).data.publicUrl
+}
+
+function toast(type,msg) {
+  const t=document.getElementById('toast'); t.className='toast '+type; t.textContent=msg; t.style.display='block'
+  setTimeout(()=>t.style.display='none',3000)
+}
+
+// === INIT ===
+document.addEventListener('DOMContentLoaded', async () => {
+  startGPS()
+  await loadSalesmen()
+  const saved = localStorage.getItem('salesman')
+  if (saved && salesmen.find(s=>s.name===saved)) { await loadMyData(saved); showScreen('listScreen') }
+})
+</script>
+</body>
+</html>
