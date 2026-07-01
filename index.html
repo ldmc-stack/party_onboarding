@@ -116,6 +116,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans
 .party-search:focus{border-color:#0F6E56;background:#fff}
 .party-select{border:0.5px solid #E5E3DC;border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;outline:none;background:#F8F7F4;cursor:pointer}
 .party-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;padding:16px}
+
+/* PARTY TABLE (scrollable, scales to thousands) */
+.party-table-wrap{overflow-x:auto;overflow-y:auto;max-height:600px;border-top:0.5px solid #E5E3DC}
+.party-table{width:100%;border-collapse:collapse;min-width:900px}
+.party-table th{font-size:10px;color:#73726C;text-transform:uppercase;letter-spacing:0.4px;padding:9px 12px;text-align:left;background:#FBFAF7;border-bottom:0.5px solid #E5E3DC;white-space:nowrap;position:sticky;top:0;z-index:5}
+.party-table td{font-size:12px;padding:8px 12px;border-bottom:0.5px solid #F1EFE8;white-space:nowrap;color:#1a1a1a}
+.party-table tr{cursor:pointer}
+.party-table tr:hover td{background:#FBFAF7}
+.party-table .pt-photo{width:40px;height:40px;border-radius:6px;object-fit:cover;background:#F1EFE8;display:block}
+.party-table .pt-photo-empty{width:40px;height:40px;border-radius:6px;background:#F1EFE8;display:flex;align-items:center;justify-content:center;font-size:9px;color:#9C9A92}
+.party-table .pt-remarks{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.party-count-bar{padding:10px 16px;font-size:12px;color:#73726C;border-top:0.5px solid #F1EFE8;background:#FBFAF7}
 .party-card{border:0.5px solid #E5E3DC;border-radius:10px;overflow:hidden;background:#fff}
 .party-photo{width:100%;height:120px;object-fit:cover;background:#F1EFE8;display:flex;align-items:center;justify-content:center;color:#9C9A92;font-size:12px}
 .party-photo img{width:100%;height:120px;object-fit:cover}
@@ -417,7 +429,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans
       </select>
     </div>
     <div id="partyListWrap">
-      <div class="party-grid" id="partyGrid"></div>
+    <div class="party-table-wrap">
+      <table class="party-table">
+        <thead><tr>
+          <th>Photo</th><th>Party</th><th>Type</th><th>Status</th><th>Owner</th><th>Phone</th>
+          <th>Town</th><th>District</th><th>Village</th><th>Salesman</th><th>Distance</th><th>Time</th><th>Remarks</th>
+        </tr></thead>
+        <tbody id="partyTableBody"></tbody>
+      </table>
+    </div>
+    <div class="party-count-bar" id="partyCountBar"></div>
     </div>
   </div>
 
@@ -886,27 +907,31 @@ function renderPartyList() {
   })
   const badgeClass = s => s === 'Onboarded' ? 'badge-onboarded' : s === 'Open' ? 'badge-open' : s === 'Closed' ? 'badge-closed' : 'badge-doesnt'
   window._partyRows = {}
-  document.getElementById('partyGrid').innerHTML = rows.length ? rows.slice(0,100).map(r => {
+  const shown = rows.slice(0, 500)
+  document.getElementById('partyTableBody').innerHTML = shown.length ? shown.map(r => {
     window._partyRows[r.id] = r
-    return `<div class="party-card" onclick="openDetail('${r.id}')">
-      ${r.photo_url
-        ? `<img class="party-photo" src="${r.photo_url}" alt="${r.party_name||''}" loading="lazy">`
-        : `<div class="party-photo">No photo</div>`}
-      <div class="party-info">
-        <div class="party-name">${r.party_name||'—'}</div>
-        <div class="party-meta">
-          <span><span class="status-badge ${badgeClass(r.status)}">${r.status||'—'}</span></span>
-          <span>${r.owner_name||''} ${r.phone ? '· ' + r.phone : ''}</span>
-          <span>${[r.town, r.district, r.state].filter(Boolean).join(', ')}</span>
-          <span style="color:#9C9A92">${r.sales_team||''} · ${r.party_type||''}</span>
-          ${r.latitude && r.longitude
-            ? `<span style="color:#9C9A92">📍 ${r.latitude.toFixed(5)}, ${r.longitude.toFixed(5)}</span>`
-            : `<span style="color:#9C9A92">📍 No GPS</span>`}
-          ${r.location_flag === 'far' ? `<span style="color:#A32D2D;font-size:11px">⚠ ${r.distance_from_centre ? r.distance_from_centre.toFixed(1)+' km from town' : 'far from town'}</span>` : ''}
-        </div>
-      </div>
-    </div>`
-  }).join('') : '<div class="empty">No parties match the filter</div>'
+    const dt = r.submission_time ? new Date(r.submission_time) : null
+    const timeStr = dt ? dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})+' '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : '—'
+    const dist = r.location_flag==='far'
+      ? `<span style="color:#A32D2D">⚠ ${r.distance_from_centre?r.distance_from_centre.toFixed(1)+'km':'far'}</span>`
+      : (r.distance_from_centre!=null?r.distance_from_centre.toFixed(1)+'km':'—')
+    return `<tr onclick="openDetail('${r.id}')">
+      <td>${r.photo_url?`<img class="pt-photo" src="${r.photo_url}" loading="lazy">`:`<div class="pt-photo-empty">none</div>`}</td>
+      <td><strong>${r.party_name||'—'}</strong></td>
+      <td>${r.party_type||'—'}${r.source==='new'?' <span style="color:#534AB7">(new)</span>':''}</td>
+      <td><span class="status-badge ${badgeClass(r.status)}">${r.status||'—'}</span></td>
+      <td>${r.owner_name||'—'}</td>
+      <td>${r.phone||'—'}</td>
+      <td>${r.town||'—'}</td>
+      <td>${r.district||'—'}</td>
+      <td>${r.village_type||'—'}</td>
+      <td>${r.salesman||r.agent_name||'—'}</td>
+      <td>${dist}</td>
+      <td>${timeStr}</td>
+      <td class="pt-remarks" title="${(r.remarks||'').replace(/"/g,'&quot;')}">${r.remarks||'—'}</td>
+    </tr>`
+  }).join('') : '<tr><td colspan="13" class="empty">No parties match the filter</td></tr>'
+  document.getElementById('partyCountBar').textContent = `Showing ${shown.length} of ${rows.length} submissions${rows.length>500?' (first 500 — use filters to narrow)':''}`
 }
 
 // === STORE DETAIL MODAL ===
