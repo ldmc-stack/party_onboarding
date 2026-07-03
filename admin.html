@@ -3,340 +3,580 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — Party Onboarding</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<title>Party Onboarding Dashboard</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:#F4F3EF;color:#1a1a1a;min-height:100vh}
-.header{background:#0F6E56;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:#EEEDE7;color:#1a1a1a;min-height:100vh}
+.header{background:#0F6E56;padding:0 24px;display:flex;align-items:center;justify-content:space-between;min-height:56px;position:sticky;top:0;z-index:100}
+.header-left{display:flex;align-items:center;gap:12px}
+.logo{width:32px;height:32px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
 .header h1{color:#fff;font-size:15px;font-weight:500}
-.back-btn{background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;text-decoration:none}
-.main{max-width:920px;margin:0 auto;padding:24px}
-.step-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#0F6E56;color:#fff;border-radius:50%;font-size:12px;font-weight:600;margin-right:8px}
-.card{background:#fff;border-radius:12px;border:0.5px solid #E5E3DC;margin-bottom:20px;overflow:hidden}
-.card-header{padding:16px 20px;border-bottom:0.5px solid #F1EFE8}
-.card-title{font-size:14px;font-weight:500;display:flex;align-items:center}
-.card-sub{font-size:12px;color:#73726C;margin-top:5px;margin-left:30px}
-.card-body{padding:20px}
-.upload-zone{border:2px dashed #D3D1C7;border-radius:10px;padding:32px;text-align:center;cursor:pointer;transition:all 0.2s;background:#F8F7F4}
-.upload-zone:hover,.upload-zone.drag{border-color:#0F6E56;background:#F0FAF5}
-.upload-zone svg{margin-bottom:10px;color:#73726C}
-.upload-zone h3{font-size:13px;font-weight:500;margin-bottom:4px}
-.upload-zone p{font-size:12px;color:#73726C}
-.upload-zone input{display:none}
-.preview-wrap{margin-top:16px;display:none}
-.preview-title{font-size:12px;font-weight:500;color:#73726C;margin-bottom:8px;display:flex;justify-content:space-between}
-.table-wrap{overflow-x:auto;border-radius:8px;border:0.5px solid #E5E3DC;max-height:280px;overflow-y:auto}
-table{width:100%;border-collapse:collapse}
-th{font-size:10px;color:#73726C;text-transform:uppercase;letter-spacing:0.4px;padding:8px 12px;text-align:left;background:#FBFAF7;border-bottom:0.5px solid #E5E3DC;white-space:nowrap;position:sticky;top:0}
-td{font-size:12px;padding:8px 12px;border-bottom:0.5px solid #F1EFE8;white-space:nowrap}
-.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px}
-.btn-primary{background:#0F6E56;color:#fff}
-.btn-primary:hover{background:#0A5A46}
-.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
-.btn-danger{background:#FCEBEB;color:#A32D2D;border:0.5px solid #E24B4A}
-.btn-secondary{background:#fff;color:#5F5E5A;border:0.5px solid #E5E3DC}
-.btn-row{display:flex;gap:8px;margin-top:16px;align-items:center;flex-wrap:wrap}
-.status-msg{padding:12px 16px;border-radius:8px;font-size:13px;margin-top:12px;display:none}
-.status-msg.success{background:#E5F4ED;color:#0F6E56;border:0.5px solid #1D9E75}
-.status-msg.error{background:#FCEBEB;color:#A32D2D;border:0.5px solid #E24B4A}
-.status-msg.info{background:#E6F1FB;color:#185FA5;border:0.5px solid #378ADD}
-.status-msg.warn{background:#FAEEDA;color:#854F0B;border:0.5px solid #EF9F27}
-.progress-wrap{margin-top:12px;display:none}
-.progress-label{font-size:11px;color:#73726C;margin-bottom:4px}
-.progress-track{height:6px;background:#F1EFE8;border-radius:3px;overflow:hidden}
-.progress-fill{height:100%;background:#0F6E56;border-radius:3px;transition:width 0.3s;width:0%}
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-.stat{background:#F8F7F4;border-radius:8px;padding:12px}
-.stat-val{font-size:22px;font-weight:500;color:#0F6E56}
-.stat-label{font-size:11px;color:#73726C;margin-top:2px}
-.template-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:0.5px solid #E5E3DC;border-radius:8px;padding:8px 14px;font-size:12px;color:#5F5E5A;cursor:pointer;font-family:inherit;margin-top:12px;text-decoration:none}
-.template-btn:hover{border-color:#0F6E56;color:#0F6E56}
+.header-sub{color:rgba(255,255,255,0.85);font-size:11px;margin-top:2px}
+.header-right{display:flex;align-items:center;gap:8px}
+.header-btn{background:rgba(255,255,255,0.18);border:none;color:#fff;padding:7px 13px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.header-btn:hover{background:rgba(255,255,255,0.28)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75;display:inline-block}
+.sync-dot.syncing{background:#EF9F27;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.tabs-bar{background:#fff;border-bottom:0.5px solid #E5E3DC;padding:0 24px;display:flex;position:sticky;top:56px;z-index:95}
+.tab{padding:12px 18px;font-size:13px;color:#73726C;cursor:pointer;border-bottom:2px solid transparent;font-weight:500;margin-bottom:-0.5px}
+.tab.active{color:#0F6E56;border-bottom-color:#0F6E56}
+.main{max-width:1400px;margin:0 auto;padding:20px 24px}
+.filter-bar{background:#fff;border-radius:12px;border:0.5px solid #E5E3DC;padding:14px 18px;margin-bottom:16px}
+.filter-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.filter-row:last-child{margin-bottom:0}
+.filter-label{font-size:11px;color:#73726C;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+.pill-group{display:flex;gap:5px;flex-wrap:wrap}
+.pill{padding:5px 13px;border-radius:20px;border:0.5px solid #E5E3DC;background:#F8F7F4;font-size:12px;color:#5F5E5A;cursor:pointer;font-family:inherit}
+.pill.active{background:#0F6E56;border-color:#0F6E56;color:#fff;font-weight:500}
+.date-range{display:flex;gap:6px;align-items:center}
+.date-range input{border:0.5px solid #E5E3DC;border-radius:6px;padding:5px 9px;font-size:12px;background:#F8F7F4;font-family:inherit;outline:none}
+.date-range input:focus{border-color:#0F6E56}
+.last-updated{margin-left:auto;font-size:11px;color:#9C9A92}
+.sec-hdr{color:#fff;padding:11px 18px;font-size:12px;font-weight:500;border-radius:10px 10px 0 0;margin-top:18px;display:flex;justify-content:space-between;align-items:center}
+.sec-hdr.teal{background:#0F6E56}
+.sec-hdr.blue{background:#185FA5}
+.sec-hdr.purple{background:#7F77DD}
+.sec-hdr.amber{background:#BA7517}
+.sec-hdr-sub{font-size:11px;opacity:0.85;font-weight:400}
+.sec-body{background:#fff;border:0.5px solid #E5E3DC;border-top:none;border-radius:0 0 10px 10px;overflow:hidden}
+.cov-grid{padding:16px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cov-box{border-radius:8px;padding:12px 14px;border-left:3px solid}
+.cov-box.green{background:#F0FAF5;border-left-color:#1D9E75}
+.cov-box.blue{background:#E6F1FB;border-left-color:#378ADD}
+.cov-box.amber{background:#FAEEDA;border-left-color:#EF9F27}
+.cov-box.purple{background:#EEEDFE;border-left-color:#7F77DD}
+.cov-num{font-size:30px;font-weight:500;line-height:1}
+.cov-num.green{color:#0F6E56}.cov-num.blue{color:#185FA5}.cov-num.amber{color:#854F0B}.cov-num.purple{color:#3C3489}
+.cov-label{font-size:11px;color:#5F5E5A;margin-top:4px}
+.counter-grid{padding:0 18px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.counter-card{border:0.5px solid #E5E3DC;border-radius:10px;padding:14px}
+.counter-title{font-size:11px;font-weight:500;color:#73726C;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px}
+.counter-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.counter-stat-value{font-size:22px;font-weight:500;line-height:1}
+.counter-stat-label{font-size:10px;color:#73726C;margin-top:3px}
+.kpi-grid{padding:16px 18px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.kpi-card{border-radius:8px;padding:12px 10px;border-top:3px solid}
+.kpi-card.green{background:#F0FAF5;border-top-color:#1D9E75}
+.kpi-card.amber{background:#FAEEDA;border-top-color:#EF9F27}
+.kpi-card.gray{background:#F1EFE8;border-top-color:#888780}
+.kpi-card.red{background:#FCEBEB;border-top-color:#E24B4A}
+.kpi-card.blue{background:#E6F1FB;border-top-color:#378ADD}
+.kpi-card.teal{background:#F0FAF5;border-top-color:#0F6E56}
+.kpi-card.purple{background:#EEEDFE;border-top-color:#7F77DD}
+.kpi-num{font-size:26px;font-weight:500;line-height:1}
+.kpi-num.green{color:#0F6E56}.kpi-num.amber{color:#854F0B}.kpi-num.gray{color:#5F5E5A}.kpi-num.red{color:#A32D2D}.kpi-num.blue{color:#185FA5}.kpi-num.teal{color:#0F6E56}.kpi-num.purple{color:#3C3489}
+.kpi-lbl{font-size:10px;color:#5F5E5A;margin-top:4px}
+.today-grid{padding:16px 18px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.today-card{border:1px dashed #D3D1C7;border-radius:8px;padding:10px}
+.today-num{font-size:20px;font-weight:500;line-height:1}
+.today-lbl{font-size:10px;color:#73726C;margin-top:3px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.mini-card{background:#fff;border:0.5px solid #E5E3DC;border-radius:10px;overflow:hidden}
+.mini-card-hdr{padding:12px 16px;border-bottom:0.5px solid #F1EFE8;font-size:13px;font-weight:500}
+.mini-card-body{padding:14px 16px}
+.status-bar-track{height:8px;border-radius:4px;background:#F1EFE8;overflow:hidden;display:flex;margin-bottom:12px}
+.status-bar-seg{height:100%;transition:width 0.6s ease}
+.status-legend{display:flex;flex-wrap:wrap;gap:10px}
+.status-legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#5F5E5A}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.vtype-grid{padding:16px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.vtype-card{border:0.5px solid #E5E3DC;border-radius:10px;padding:14px;border-top:3px solid}
+.vtype-card.p1{border-top-color:#0F6E56}
+.vtype-card.p2{border-top-color:#185FA5}
+.vtype-card.p3{border-top-color:#BA7517}
+.vtype-card.dhq{border-top-color:#7F77DD}
+.vtype-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.vtype-name{font-size:14px;font-weight:600}
+.vtype-name.p1{color:#0F6E56}.vtype-name.p2{color:#185FA5}.vtype-name.p3{color:#854F0B}.vtype-name.dhq{color:#3C3489}
+.vtype-total{font-size:11px;color:#73726C}
+.vtype-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.vtype-stat{background:#F8F7F4;padding:8px 10px;border-radius:6px}
+.vtype-stat-num{font-size:17px;font-weight:500;line-height:1}
+.vtype-stat-lbl{font-size:10px;color:#5F5E5A;margin-top:3px}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{font-size:10px;color:#73726C;text-transform:uppercase;letter-spacing:0.4px;padding:9px 14px;text-align:left;background:#FBFAF7;border-bottom:0.5px solid #E5E3DC;white-space:nowrap}
+.data-table td{font-size:12px;padding:9px 14px;border-bottom:0.5px solid #F1EFE8;color:#1a1a1a}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:#FBFAF7}
+.data-table .num{text-align:right;font-variant-numeric:tabular-nums}
+.pct-cell{font-weight:500;color:#0F6E56}
+.pct-cell.warn{color:#BA7517}
+.pct-cell.low{color:#A32D2D}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500}
+.badge-onboarded{background:#E1F5EE;color:#0F6E56}
+.badge-open{background:#FAEEDA;color:#854F0B}
+.badge-closed{background:#F1EFE8;color:#5F5E5A}
+.badge-doesnt{background:#FCEBEB;color:#A32D2D}
+.card-toolbar{padding:10px 16px;border-bottom:0.5px solid #F1EFE8;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mini-tabs{display:flex;gap:0}
+.mini-tab{padding:5px 12px;font-size:12px;color:#73726C;cursor:pointer;border-radius:6px}
+.mini-tab.active{background:#F0FAF5;color:#0F6E56;font-weight:500}
+.hdr-search{border-radius:6px;padding:5px 10px;font-size:12px;font-family:inherit;outline:none;width:180px}
+.tt-filters{padding:12px 18px;background:#FBFAF7;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:0.5px solid #F1EFE8}
+.tt-filter-label{font-size:11px;color:#73726C;text-transform:uppercase;letter-spacing:0.5px;margin-right:4px}
+.tt-chip{padding:5px 12px;border-radius:16px;font-size:12px;cursor:pointer;background:#fff;border:0.5px solid #E5E3DC;color:#5F5E5A;font-family:inherit}
+.tt-chip.active{background:#0F6E56;color:#fff;border-color:#0F6E56;font-weight:500}
+.tt-sort{margin-left:auto;background:#fff;border:0.5px solid #E5E3DC;color:#5F5E5A;padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit}
+.town-list{max-height:520px;overflow-y:auto}
+.town-row{padding:12px 18px;border-bottom:0.5px solid #F1EFE8;cursor:pointer}
+.town-row:hover{background:#FBFAF7}
+.town-row-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:12px}
+.town-name-wrap{flex:1;min-width:0}
+.town-name-row{font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.town-meta{font-size:11px;color:#73726C;margin-top:2px}
+.town-progress-side{text-align:right;flex-shrink:0}
+.town-pct{font-size:18px;font-weight:500;line-height:1}
+.town-pct.green{color:#0F6E56}.town-pct.amber{color:#854F0B}.town-pct.red{color:#A32D2D}.town-pct.gray{color:#9C9A92}
+.town-ratio{font-size:10px;color:#73726C;margin-top:3px}
+.town-bar-track{height:6px;background:#F1EFE8;border-radius:3px;overflow:hidden;margin-bottom:8px}
+.town-bar-fill{height:100%;border-radius:3px;transition:width 0.5s ease}
+.town-bar-fill.green{background:#1D9E75}.town-bar-fill.amber{background:#EF9F27}.town-bar-fill.red{background:#E24B4A}
+.town-stats{display:flex;gap:12px;font-size:11px;color:#5F5E5A;flex-wrap:wrap}
+.town-stats span strong{color:#1a1a1a}
+.town-count-bar{padding:9px 16px;font-size:11px;color:#73726C;background:#FBFAF7;border-top:0.5px solid #F1EFE8}
+.tt-summary-grid{padding:16px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;border-bottom:0.5px solid #F1EFE8}
+.tt-vt-card{border:0.5px solid #E5E3DC;border-radius:10px;padding:12px;border-top:3px solid}
+.tt-vt-card.p1{border-top-color:#0F6E56}.tt-vt-card.p2{border-top-color:#185FA5}.tt-vt-card.p3{border-top-color:#BA7517}.tt-vt-card.dhq{border-top-color:#7F77DD}
+.tt-vt-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.tt-vt-name{font-size:13px;font-weight:600}
+.tt-vt-name.p1{color:#0F6E56}.tt-vt-name.p2{color:#185FA5}.tt-vt-name.p3{color:#854F0B}.tt-vt-name.dhq{color:#3C3489}
+.tt-vt-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tt-vt-stat{padding:7px 9px;border-radius:6px}
+.tt-vt-stat.nv{background:#F1EFE8}
+.tt-vt-stat.on{background:#F0FAF5}
+.tt-vt-stat.op{background:#FAEEDA}
+.tt-vt-stat.vn{background:#FCEBEB}
+.tt-vt-stat-num{font-size:16px;font-weight:500;line-height:1}
+.tt-vt-stat.nv .tt-vt-stat-num{color:#5F5E5A}
+.tt-vt-stat.on .tt-vt-stat-num{color:#0F6E56}
+.tt-vt-stat.op .tt-vt-stat-num{color:#854F0B}
+.tt-vt-stat.vn .tt-vt-stat-num{color:#A32D2D}
+.tt-vt-stat-lbl{font-size:10px;color:#5F5E5A;margin-top:3px}
+#mapContainer{height:400px;width:100%;z-index:1}
+.map-legend{display:flex;gap:14px;padding:10px 18px;border-top:0.5px solid #F1EFE8;flex-wrap:wrap;background:#FBFAF7}
+.map-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#5F5E5A}
+.map-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.party-filters{padding:10px 18px;background:#FBFAF7;display:flex;gap:8px;flex-wrap:wrap;border-bottom:0.5px solid #F1EFE8}
+.party-search{flex:1;min-width:160px;border:0.5px solid #E5E3DC;border-radius:6px;padding:6px 12px;font-size:12px;font-family:inherit;outline:none;background:#fff}
+.party-select{border:0.5px solid #E5E3DC;border-radius:6px;padding:6px 10px;font-size:12px;font-family:inherit;outline:none;background:#fff;cursor:pointer}
+.party-table-wrap{overflow-x:auto;overflow-y:auto;max-height:600px}
+.party-table{width:100%;border-collapse:collapse;min-width:1000px}
+.party-table th{font-size:10px;color:#73726C;text-transform:uppercase;letter-spacing:0.4px;padding:9px 12px;text-align:left;background:#FBFAF7;border-bottom:0.5px solid #E5E3DC;white-space:nowrap;position:sticky;top:0;z-index:5}
+.party-table td{font-size:12px;padding:8px 12px;border-bottom:0.5px solid #F1EFE8;white-space:nowrap;color:#1a1a1a}
+.party-table tr{cursor:pointer}
+.party-table tr:hover td{background:#FBFAF7}
+.party-table tr.flagged td{background:#FEFBF9}
+.party-table tr.flagged:hover td{background:#FDF3F3}
+.pt-photo{width:34px;height:34px;border-radius:5px;object-fit:cover;background:#F1EFE8;display:block}
+.pt-photo-empty{width:34px;height:34px;border-radius:5px;background:#F1EFE8;display:flex;align-items:center;justify-content:center;font-size:9px;color:#9C9A92}
+.pt-remarks{max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.count-bar{padding:10px 16px;font-size:11px;color:#73726C;background:#FBFAF7;border-top:0.5px solid #F1EFE8}
+.empty{padding:40px;text-align:center;color:#9C9A92;font-size:13px}
+.loading-overlay{position:fixed;inset:0;background:#EEEDE7;display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:12px}
+.spinner{width:32px;height:32px;border:3px solid #E5E3DC;border-top-color:#0F6E56;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:#73726C}
+.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.detail-overlay.open{display:flex}
+.detail-modal{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:88vh;overflow-y:auto}
+.detail-photo{width:100%;height:280px;object-fit:cover;background:#F1EFE8;display:block;border-radius:16px 16px 0 0}
+.detail-photo-empty{width:100%;height:120px;background:#F1EFE8;display:flex;align-items:center;justify-content:center;color:#9C9A92;font-size:13px;border-radius:16px 16px 0 0}
+.detail-body{padding:20px}
+.detail-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.detail-name{font-size:20px;font-weight:600}
+.detail-close{background:#F1EFE8;border:none;border-radius:8px;width:32px;height:32px;font-size:18px;cursor:pointer;color:#5F5E5A;flex-shrink:0}
+.detail-sub{font-size:13px;color:#73726C;margin-bottom:16px}
+.detail-status-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#E5E3DC;border-radius:10px;overflow:hidden;margin-bottom:14px}
+.detail-cell{background:#fff;padding:12px 14px}
+.detail-cell.full{grid-column:1/-1}
+.detail-cell-label{font-size:10px;color:#73726C;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px}
+.detail-cell-value{font-size:14px;color:#1a1a1a;word-break:break-word}
+.detail-cell-value a{color:#185FA5;text-decoration:none}
+.detail-remarks{background:#FBFAF7;border:0.5px solid #E5E3DC;border-radius:10px;padding:14px;font-size:14px;color:#1a1a1a;line-height:1.5;white-space:pre-wrap}
+.detail-flag{background:#FCEBEB;color:#A32D2D;border:0.5px solid #E24B4A;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px}
+@media(max-width:1200px){.kpi-grid,.today-grid{grid-template-columns:repeat(3,1fr)}.cov-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.kpi-grid,.today-grid,.cov-grid{grid-template-columns:repeat(2,1fr)}.two-col,.vtype-grid,.tt-summary-grid,.counter-grid{grid-template-columns:1fr}.main{padding:14px}}
 </style>
 </head>
 <body>
 
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div class="loading-text">Loading dashboard…</div></div>
+
 <div class="header">
-  <h1>⚙ Admin — Data Upload</h1>
-  <a class="back-btn" href="index.html">← Dashboard</a>
+  <div class="header-left">
+    <div class="logo">🏪</div>
+    <div><h1>Party Onboarding</h1><div class="header-sub" id="headerSummary">—</div></div>
+  </div>
+  <div class="header-right">
+    <span class="sync-dot" id="syncDot"></span>
+    <button class="header-btn" onclick="loadData()">↻ Refresh</button>
+    <button class="header-btn" onclick="exportExcel()">↓ Excel</button>
+    <a class="header-btn" href="form.html">+ Visit</a>
+    <a class="header-btn" href="admin.html">⚙ Admin</a>
+  </div>
+</div>
+
+<div class="tabs-bar">
+  <div class="tab active" onclick="switchView('main',this)">Main dashboard</div>
+  <div class="tab" onclick="switchView('tracker',this)">Town onboarding tracker</div>
+  <div class="tab" onclick="switchView('parties',this)">Party list</div>
 </div>
 
 <div class="main">
 
-  <!-- STEP 1: CID MASTER (Book1) -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title"><span class="step-badge">1</span>Upload CID master (Book1)</div>
-      <div class="card-sub">Maps each Town Code to a salesman. Columns: State, District, Tehsil, Town Code, Town/Village, TTY, Salesman, Phone no</div>
+  <div class="filter-bar">
+    <div class="filter-row">
+      <span class="filter-label">State</span>
+      <div class="pill-group" id="stateFilters"><button class="pill active" onclick="setStateFilter('ALL',this)">All states</button></div>
     </div>
-    <div class="card-body">
-      <div class="upload-zone" id="cidZone" onclick="document.getElementById('cidInput').click()">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <h3>Drop Book1.xlsx here or click to browse</h3>
-        <p>The CID → salesman mapping</p>
-        <input type="file" id="cidInput" accept=".xlsx,.xls" onchange="onCidFile(event)">
+    <div class="filter-row">
+      <span class="filter-label">Village type</span>
+      <div class="pill-group" id="vtypeFilters"><button class="pill active" onclick="setVtypeFilter('ALL',this)">All</button></div>
+      <div class="date-range">
+        <span class="filter-label">Date</span>
+        <input type="date" id="dateFrom" onchange="applyFilters()">
+        <span style="color:#9C9A92;font-size:11px">to</span>
+        <input type="date" id="dateTo" onchange="applyFilters()">
       </div>
-      <div class="preview-wrap" id="cidPreview">
-        <div class="preview-title"><span>Preview</span><span id="cidCount"></span></div>
-        <div class="table-wrap">
-          <table><thead><tr><th>Town Code</th><th>State</th><th>District</th><th>Town</th><th>Salesman</th><th>Town Lat/Long</th></tr></thead><tbody id="cidBody"></tbody></table>
-        </div>
-        <div class="progress-wrap" id="cidProgress"><div class="progress-label" id="cidProgLabel">Uploading...</div><div class="progress-track"><div class="progress-fill" id="cidProgFill"></div></div></div>
-        <div class="btn-row">
-          <button class="btn btn-primary" id="cidUploadBtn" onclick="uploadCid()">Upload CID master</button>
-          <button class="btn btn-secondary" onclick="clearCid()">Clear</button>
-        </div>
-      </div>
-      <div class="status-msg" id="cidStatus"></div>
+      <span class="last-updated" id="lastUpdated">—</span>
     </div>
   </div>
 
-  <!-- STEP 2: PARTIES (Party_list) -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title"><span class="step-badge">2</span>Upload party list</div>
-      <div class="card-sub">The parties to validate. Joined to salesman via Town Code. Columns: State, District, Tehsil, Town Code, Town/Village, Population, Village Type, Approx. FMCG Outlet, Latitude, Longitude, Party Name, Party Lat, Party Long, Phone Number</div>
+  <div class="view" id="view-main">
+    <div class="sec-hdr teal"><span>Selected state database</span></div>
+    <div class="sec-body">
+      <div class="cov-grid">
+        <div class="cov-box green"><div class="cov-num green" id="cov-requested">—</div><div class="cov-label">Districts requested</div></div>
+        <div class="cov-box blue"><div class="cov-num blue" id="cov-received">—</div><div class="cov-label">Received</div></div>
+        <div class="cov-box amber"><div class="cov-num amber" id="cov-pending">—</div><div class="cov-label">Pending</div></div>
+        <div class="cov-box purple"><div class="cov-num purple" id="cov-started">—</div><div class="cov-label">Audit started</div></div>
+      </div>
+      <div class="counter-grid">
+        <div class="counter-card">
+          <div class="counter-title">Unique tehsils</div>
+          <div class="counter-stats">
+            <div><div class="counter-stat-value" id="teh-total">—</div><div class="counter-stat-label">Total</div></div>
+            <div><div class="counter-stat-value" style="color:#0F6E56" id="teh-started">—</div><div class="counter-stat-label">Started</div></div>
+            <div><div class="counter-stat-value" style="color:#185FA5" id="teh-completed">—</div><div class="counter-stat-label">Completed</div></div>
+          </div>
+        </div>
+        <div class="counter-card">
+          <div class="counter-title">Unique towns</div>
+          <div class="counter-stats">
+            <div><div class="counter-stat-value" id="tw-total">—</div><div class="counter-stat-label">Total</div></div>
+            <div><div class="counter-stat-value" style="color:#0F6E56" id="tw-started">—</div><div class="counter-stat-label">Started</div></div>
+            <div><div class="counter-stat-value" style="color:#185FA5" id="tw-completed">—</div><div class="counter-stat-label">Completed</div></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="card-body">
-      <div class="upload-zone" id="partyZone" onclick="document.getElementById('partyInput').click()">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <h3>Drop Party_list.xlsx here or click to browse</h3>
-        <p>The parties for salesmen to validate</p>
-        <input type="file" id="partyInput" accept=".xlsx,.xls" onchange="onPartyFile(event)">
+
+    <div class="sec-hdr teal"><span>Overall KPI</span></div>
+    <div class="sec-body">
+      <div class="kpi-grid">
+        <div class="kpi-card teal"><div class="kpi-num teal" id="kpi-visited">—</div><div class="kpi-lbl">Total visited</div></div>
+        <div class="kpi-card green"><div class="kpi-num green" id="kpi-onboarded">—</div><div class="kpi-lbl">Onboarded</div></div>
+        <div class="kpi-card amber"><div class="kpi-num amber" id="kpi-open">—</div><div class="kpi-lbl">Open</div></div>
+        <div class="kpi-card blue"><div class="kpi-num blue" id="kpi-conv">—</div><div class="kpi-lbl">Conversion %</div></div>
+        <div class="kpi-card gray"><div class="kpi-num gray" id="kpi-closed">—</div><div class="kpi-lbl">Closed</div></div>
+        <div class="kpi-card red"><div class="kpi-num red" id="kpi-doesnt">—</div><div class="kpi-lbl">Not avail.</div></div>
       </div>
-      <div class="preview-wrap" id="partyPreview">
-        <div class="preview-title"><span>Preview</span><span id="partyCount"></span></div>
-        <div id="joinWarn" class="status-msg warn" style="display:none"></div>
-        <div class="table-wrap">
-          <table><thead><tr><th>Party Name</th><th>Town Code</th><th>Town</th><th>Type</th><th>Party Lat</th><th>Party Long</th><th>Salesman</th></tr></thead><tbody id="partyBody"></tbody></table>
-        </div>
-        <div class="progress-wrap" id="partyProgress"><div class="progress-label" id="partyProgLabel">Uploading...</div><div class="progress-track"><div class="progress-fill" id="partyProgFill"></div></div></div>
-        <div class="btn-row">
-          <button class="btn btn-primary" id="partyUploadBtn" onclick="uploadParties()">Upload parties</button>
-          <button class="btn btn-secondary" onclick="clearParty()">Clear</button>
+    </div>
+
+    <div class="sec-hdr blue"><span>Today's KPI</span></div>
+    <div class="sec-body">
+      <div class="today-grid">
+        <div class="today-card"><div class="today-num" id="today-visited">—</div><div class="today-lbl">Visited</div></div>
+        <div class="today-card"><div class="today-num" style="color:#0F6E56" id="today-onboarded">—</div><div class="today-lbl">Onboarded</div></div>
+        <div class="today-card"><div class="today-num" style="color:#854F0B" id="today-open">—</div><div class="today-lbl">Open</div></div>
+        <div class="today-card"><div class="today-num" style="color:#185FA5" id="today-conv">—</div><div class="today-lbl">Conv %</div></div>
+        <div class="today-card"><div class="today-num" style="color:#5F5E5A" id="today-closed">—</div><div class="today-lbl">Closed</div></div>
+        <div class="today-card"><div class="today-num" style="color:#A32D2D" id="today-doesnt">—</div><div class="today-lbl">Not avail.</div></div>
+      </div>
+    </div>
+
+    <div class="sec-hdr purple"><span>List coverage</span></div>
+    <div class="sec-body">
+      <div class="kpi-grid">
+        <div class="kpi-card teal"><div class="kpi-num teal" id="kpi-assigned">—</div><div class="kpi-lbl">Assigned parties</div></div>
+        <div class="kpi-card green"><div class="kpi-num green" id="kpi-validated">—</div><div class="kpi-lbl">Validated</div></div>
+        <div class="kpi-card amber"><div class="kpi-num amber" id="kpi-pending">—</div><div class="kpi-lbl">Pending</div></div>
+        <div class="kpi-card blue"><div class="kpi-num blue" id="kpi-coverage">—</div><div class="kpi-lbl">Coverage %</div></div>
+        <div class="kpi-card purple"><div class="kpi-num purple" id="kpi-new">—</div><div class="kpi-lbl">New parties</div></div>
+        <div class="kpi-card gray"><div class="kpi-num gray" id="kpi-salesmen">—</div><div class="kpi-lbl" id="kpi-salesmen-lbl">Salesmen</div></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="mini-card">
+        <div class="mini-card-hdr">Status breakdown <span style="float:right;font-weight:400;color:#9C9A92;font-size:11px" id="breakdownTotal"></span></div>
+        <div class="mini-card-body">
+          <div class="status-bar-track" id="statusBarTrack"></div>
+          <div class="status-legend" id="statusLegend"></div>
         </div>
       </div>
-      <div class="status-msg" id="partyStatus"></div>
+      <div class="mini-card">
+        <div class="mini-card-hdr">New vs Existing parties</div>
+        <div class="mini-card-body">
+          <div class="status-bar-track" id="partyTypeBar"></div>
+          <div class="status-legend" id="partyTypeLegend"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-hdr amber"><span>Village type breakdown</span></div>
+    <div class="sec-body"><div class="vtype-grid" id="vtypeGrid"></div></div>
+
+    <div class="two-col">
+      <div class="mini-card">
+        <div class="mini-card-hdr">Existing vs New — Overall</div>
+        <table class="data-table">
+          <thead><tr><th>Party type</th><th class="num">Visited</th><th class="num">Open</th><th class="num">Onboarded</th><th class="num">Conv %</th></tr></thead>
+          <tbody id="existNewOverallBody"></tbody>
+        </table>
+      </div>
+      <div class="mini-card">
+        <div class="mini-card-hdr">Existing vs New — Today</div>
+        <table class="data-table">
+          <thead><tr><th>Party type</th><th class="num">Visited</th><th class="num">Open</th><th class="num">Onboarded</th><th class="num">Conv %</th></tr></thead>
+          <tbody id="existNewTodayBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="mini-card">
+        <div class="card-toolbar">
+          <span style="font-size:13px;font-weight:500">Salesman summary</span>
+          <div class="mini-tabs">
+            <span class="mini-tab active" onclick="switchTeamTab('overall',this)">Overall</span>
+            <span class="mini-tab" onclick="switchTeamTab('today',this)">Today</span>
+          </div>
+        </div>
+        <table class="data-table" id="teamTable">
+          <thead><tr><th>Salesman</th><th class="num">Visited</th><th class="num">Onboarded</th><th class="num">Conv %</th><th class="num">Flagged</th></tr></thead>
+          <tbody id="teamBody"></tbody>
+        </table>
+      </div>
+      <div class="mini-card">
+        <div class="card-toolbar">
+          <span style="font-size:13px;font-weight:500">District summary</span>
+          <div class="mini-tabs">
+            <span class="mini-tab active" onclick="switchDistrictTab('overall',this)">Overall</span>
+            <span class="mini-tab" onclick="switchDistrictTab('today',this)">Today</span>
+          </div>
+        </div>
+        <table class="data-table" id="districtTable">
+          <thead><tr><th>District</th><th class="num">Visited</th><th class="num">Onboarded</th><th class="num">Conv %</th></tr></thead>
+          <tbody id="districtBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="sec-hdr teal">
+      <span>District → Tehsil → Town hierarchy</span>
+      <input type="text" placeholder="Search town…" id="hierarchySearch" class="hdr-search" style="background:rgba(255,255,255,0.9);border:none" oninput="renderHierarchy()">
+    </div>
+    <div class="sec-body">
+      <div style="overflow-x:auto;max-height:400px;overflow-y:auto">
+        <table class="data-table" id="hierarchyTable">
+          <thead><tr><th>District</th><th>Tehsil</th><th>Town</th><th>Type</th><th class="num">Visited</th><th class="num">Onboarded</th><th class="num">Open</th><th class="num">Conv %</th></tr></thead>
+          <tbody id="hierarchyBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="sec-hdr blue"><span>Visited location map</span><span class="sec-hdr-sub" id="mapCount"></span></div>
+    <div class="sec-body">
+      <div id="mapContainer"></div>
+      <div class="map-legend">
+        <div class="map-legend-item"><div class="map-dot" style="background:#1D9E75"></div>Onboarded</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:#EF9F27"></div>Open</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:#888780"></div>Closed</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:#E24B4A"></div>Not avail.</div>
+        <div class="map-legend-item" style="margin-left:auto"><div class="map-dot" style="background:#EF9F27;border:2px solid #E24B4A"></div>Flagged far</div>
+      </div>
     </div>
   </div>
 
-  <!-- CURRENT DATA SUMMARY -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title"><span class="step-badge">✓</span>Current data in database</div>
+  <div class="view" id="view-tracker" style="display:none">
+    <div class="sec-hdr purple"><span>Town onboarding tracker</span><span class="sec-hdr-sub" id="ttSummary"></span></div>
+    <div class="sec-body">
+      <div class="tt-summary-grid" id="ttSummaryGrid"></div>
+      <div class="tt-filters">
+        <span class="tt-filter-label">Filter</span>
+        <div class="tt-chip active" onclick="setTtFilter('all',this)" id="tt-all">All 0</div>
+        <div class="tt-chip" onclick="setTtFilter('notVisited',this)" id="tt-nv">Not visited 0</div>
+        <div class="tt-chip" onclick="setTtFilter('onboarded',this)" id="tt-on">Onboarded ≥1  0</div>
+        <div class="tt-chip" onclick="setTtFilter('openNotOnboarded',this)" id="tt-op">Open, no onb. 0</div>
+        <div class="tt-chip" onclick="setTtFilter('visitedNoOpen',this)" id="tt-vn">Visited, no open 0</div>
+        <button class="tt-sort" onclick="toggleTtSort()" id="ttSortBtn">Sort: Progress ↓</button>
+      </div>
+      <div class="town-list" id="townList"></div>
+      <div class="town-count-bar" id="townCountBar"></div>
     </div>
-    <div class="card-body">
-      <div class="stat-grid">
-        <div class="stat"><div class="stat-val" id="statCid">—</div><div class="stat-label">Town codes (CID)</div></div>
-        <div class="stat"><div class="stat-val" id="statParties">—</div><div class="stat-label">Assigned parties</div></div>
-        <div class="stat"><div class="stat-val" id="statSalesmen">—</div><div class="stat-label">Salesmen</div></div>
-        <div class="stat"><div class="stat-val" id="statSubs">—</div><div class="stat-label">Submissions</div></div>
+
+    <div class="sec-hdr teal">
+      <span>Town combo status table</span>
+      <input type="text" placeholder="Search…" id="comboSearch" class="hdr-search" style="background:rgba(255,255,255,0.9);border:none" oninput="renderComboTable()">
+    </div>
+    <div class="sec-body" style="overflow-x:auto;max-height:500px;overflow-y:auto">
+      <table class="data-table" id="comboTable">
+        <thead><tr><th>District</th><th>Tehsil</th><th>Town</th><th>Type</th><th>Tracker status</th><th class="num">In DB</th><th class="num">Visited</th><th class="num">Open</th><th class="num">Onboarded</th><th class="num">Closed</th></tr></thead>
+        <tbody id="comboBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="view" id="view-parties" style="display:none">
+    <div class="sec-hdr teal"><span>Party list</span></div>
+    <div class="sec-body">
+      <div class="party-filters">
+        <input class="party-search" type="text" placeholder="Search party, owner, phone…" id="partySearch" oninput="renderPartyList()">
+        <select class="party-select" id="partyStatusFilter" onchange="renderPartyList()">
+          <option value="">All statuses</option><option>Onboarded</option><option>Open</option><option>Closed</option><option>Not Available</option><option>Doesn't Exist</option>
+        </select>
+        <select class="party-select" id="partyTypeFilter" onchange="renderPartyList()">
+          <option value="">All types</option><option>New</option><option>Existing</option>
+        </select>
+        <select class="party-select" id="partyFlagFilter" onchange="renderPartyList()">
+          <option value="">All locations</option><option value="far">⚠ Flagged only</option><option value="ok">Within range only</option>
+        </select>
       </div>
-      <div class="btn-row">
-        <button class="btn btn-secondary" onclick="loadStats()">↻ Refresh stats</button>
-        <button class="btn btn-danger" onclick="clearParties()">Clear all parties</button>
-        <button class="btn btn-danger" onclick="clearCidMaster()">Clear CID master</button>
+      <div class="party-table-wrap">
+        <table class="party-table">
+          <thead><tr><th>Photo</th><th>Party</th><th>Type</th><th>Status</th><th>Owner</th><th>Phone</th><th>Town</th><th>District</th><th>Village</th><th>Salesman</th><th>Distance</th><th>Time</th><th>Remarks</th></tr></thead>
+          <tbody id="partyTableBody"></tbody>
+        </table>
       </div>
-      <div class="status-msg" id="generalStatus"></div>
+      <div class="count-bar" id="partyCountBar"></div>
     </div>
   </div>
 
 </div>
 
+<div class="detail-overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-modal" id="detailModal"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script>
-const SUPABASE_URL = 'https://tzejrlkclshjofqgcsrw.supabase.co'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWpybGtjbHNoam9mcWdjc3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDgwMjAsImV4cCI6MjA5NjU4NDAyMH0.vxlWh1-ptyTKJCaaluPFX1hJ1UlqFnumBD075Nfh100'
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+const SUPABASE_URL='https://tzejrlkclshjofqgcsrw.supabase.co'
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWpybGtjbHNoam9mcWdjc3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDgwMjAsImV4cCI6MjA5NjU4NDAyMH0.vxlWh1-ptyTKJCaaluPFX1hJ1UlqFnumBD075Nfh100'
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
+let allData=[],filteredData=[],assignedParties=[],cidMaster=[]
+let activeState='ALL',activeVtype='ALL',districtTab='overall',teamTab='overall'
+let ttFilter='all',ttSortBy='progress'
+let map=null,markerLayer=null
+let CONFIG={statuses:{colors:{}},villageTypes:{values:[],colors:{}},states:{values:[]}}
+const today=new Date().toISOString().split('T')[0]
 
-let cidRows = []
-let partyRows = []
-let cidSalesmanMap = {}
+async function loadConfig(){try{const r=await fetch('config/dashboard.json');if(r.ok){const c=await r.json();CONFIG={...CONFIG,...c,statuses:{...CONFIG.statuses,...c.statuses},villageTypes:{...CONFIG.villageTypes,...c.villageTypes}}}}catch(e){}}
+function vtypeClass(vt){return(vt||'').toLowerCase()}
+function detectVtypes(){const c=(CONFIG.villageTypes.values||[]).filter(Boolean);if(c.length)return c;return[...new Set([...assignedParties.map(p=>p.village_type),...allData.map(r=>r.village_type)].filter(Boolean))].sort()}
 
-function norm(obj) {
-  const n = {}
-  Object.entries(obj).forEach(([k,v]) => n[String(k).toLowerCase().trim().replace(/[.\s]+/g,'_')] = typeof v === 'string' ? v.trim() : v)
-  return n
-}
-function pick(o, ...keys) { for (const k of keys) if (o[k] !== undefined && o[k] !== '') return o[k]; return null }
-
-// === CID MASTER ===
-function onCidFile(e) { const f = e.target.files[0]; if (f) parseCid(f) }
-function parseCid(file) {
-  const reader = new FileReader()
-  reader.onload = e => {
-    const wb = XLSX.read(e.target.result, { type:'array' })
-    const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval:'' })
-    const seen = {}
-    cidRows = []
-    raw.forEach(r => {
-      const n = norm(r)
-      const cid = pick(n,'town_code','towncode','cid')
-      if (!cid) return
-      if (seen[cid]) return // dedup, first wins
-      seen[cid] = true
-      cidRows.push({
-        cid: parseInt(cid),
-        state: pick(n,'state'),
-        district: pick(n,'district'),
-        tehsil: pick(n,'tehsil'),
-        town: pick(n,'town/village','town_village','town'),
-        tty: pick(n,'tty'),
-        salesman: pick(n,'salesman'),
-        phone: pick(n,'phone_no','phone','phone_number') ? String(pick(n,'phone_no','phone','phone_number')) : null,
-        town_lat: parseFloat(pick(n,'latitude','lat','town_lat')) || null,
-        town_long: parseFloat(pick(n,'longitude','long','lng','town_long')) || null
-      })
-    })
-    cidSalesmanMap = {}
-    cidRows.forEach(r => cidSalesmanMap[r.cid] = r.salesman)
-    showCidPreview()
-  }
-  reader.readAsArrayBuffer(file)
-}
-function showCidPreview() {
-  document.getElementById('cidPreview').style.display = 'block'
-  document.getElementById('cidCount').textContent = cidRows.length + ' town codes'
-  document.getElementById('cidBody').innerHTML = cidRows.slice(0,10).map(r =>
-    `<tr><td>${r.cid}</td><td>${r.state||''}</td><td>${r.district||''}</td><td>${r.town||''}</td><td>${r.salesman||'<span style=color:#A32D2D>none</span>'}</td><td>${r.town_lat&&r.town_long?r.town_lat.toFixed(4)+', '+r.town_long.toFixed(4):'<span style=color:#A32D2D>missing</span>'}</td></tr>`
-  ).join('')
-  const noCoords = cidRows.filter(r => !r.town_lat || !r.town_long).length
-  if (noCoords > 0) {
-    showStatus('cidStatus','warn',`⚠ ${noCoords} town codes have no Latitude/Longitude. Geofencing won't work for their parties until added.`)
-  }
-}
-function clearCid() { cidRows=[]; document.getElementById('cidPreview').style.display='none'; document.getElementById('cidInput').value='' }
-
-async function uploadCid() {
-  if (!cidRows.length) return
-  const btn = document.getElementById('cidUploadBtn'); btn.disabled=true; btn.textContent='Uploading...'
-  document.getElementById('cidProgress').style.display='block'
-  const BATCH=200; let done=0
-  for (let i=0;i<cidRows.length;i+=BATCH) {
-    const batch = cidRows.slice(i,i+BATCH)
-    const { error } = await sb.from('cid_master').upsert(batch, { onConflict:'cid' })
-    if (error) { showStatus('cidStatus','error','Error: '+error.message); btn.disabled=false; btn.textContent='Upload CID master'; return }
-    done += batch.length
-    const pct = Math.round(done/cidRows.length*100)
-    document.getElementById('cidProgFill').style.width=pct+'%'
-    document.getElementById('cidProgLabel').textContent=`Uploading... ${pct}%`
-  }
-  btn.disabled=false; btn.textContent='Upload CID master'
-  showStatus('cidStatus','success',`Done! ${done} town codes uploaded.`)
-  clearCid(); loadStats()
+async function loadData(){
+  document.getElementById('syncDot').classList.add('syncing')
+  const [subs,parties,cids]=await Promise.all([sb.from('submissions').select('*').order('submission_time',{ascending:false}),sb.from('assigned_parties').select('*'),sb.from('cid_master').select('*')])
+  allData=subs.data||[];assignedParties=parties.data||[];cidMaster=cids.data||[]
+  document.getElementById('syncDot').classList.remove('syncing')
+  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString()
+  document.getElementById('headerSummary').textContent=`${cidMaster.length} CIDs · ${assignedParties.length} parties · ${allData.length} submissions`
+  buildFilters();applyFilters()
+  document.getElementById('loadingOverlay').style.display='none'
 }
 
-// === PARTIES ===
-function onPartyFile(e) { const f = e.target.files[0]; if (f) parseParty(f) }
-async function parseParty(file) {
-  // ensure we have salesman map - load from DB if not in memory
-  if (Object.keys(cidSalesmanMap).length === 0) {
-    const { data } = await sb.from('cid_master').select('cid,salesman')
-    ;(data||[]).forEach(r => cidSalesmanMap[r.cid] = r.salesman)
-  }
-  const reader = new FileReader()
-  reader.onload = e => {
-    const wb = XLSX.read(e.target.result, { type:'array' })
-    const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval:'' })
-    partyRows = []
-    let noSalesman = 0
-    raw.forEach(r => {
-      const n = norm(r)
-      const cid = pick(n,'town_code','towncode','cid')
-      const pname = pick(n,'party_name','partyname')
-      if (!cid || !pname) return
-      const cidInt = parseInt(cid)
-      const salesman = cidSalesmanMap[cidInt] || null
-      if (!salesman) noSalesman++
-      partyRows.push({
-        cid: cidInt,
-        party_name: pname,
-        party_lat: parseFloat(pick(n,'party_lat','partylat')) || null,
-        party_long: parseFloat(pick(n,'party_long','partylong')) || null,
-        phone: pick(n,'phone_number','phone') ? String(pick(n,'phone_number','phone')) : null,
-        state: pick(n,'state'),
-        district: pick(n,'district'),
-        tehsil: pick(n,'tehsil'),
-        town: pick(n,'town/village','town_village','town'),
-        village_type: pick(n,'village_type','villagetype','type'),
-        population: parseInt(pick(n,'population')) || null,
-        approx_outlets: parseInt(pick(n,'approx_fmcg_outlet','approx_outlets','approx._fmcg_outlet')) || null,
-        town_lat: parseFloat(pick(n,'latitude','lat')) || null,
-        town_long: parseFloat(pick(n,'longitude','long','lng')) || null,
-        _salesman: salesman
-      })
-    })
-    showPartyPreview(noSalesman)
-  }
-  reader.readAsArrayBuffer(file)
+function buildFilters(){
+  const states=[...new Set([...cidMaster.map(c=>c.state),...allData.map(r=>r.state)].filter(Boolean))].sort()
+  const sf=document.getElementById('stateFilters')
+  sf.innerHTML='<button class="pill active" onclick="setStateFilter(\'ALL\',this)">All states</button>'
+  states.forEach(s=>{const b=document.createElement('button');b.className='pill';b.textContent=s;b.onclick=function(){setStateFilter(s,this)};sf.appendChild(b)})
+  const vf=document.getElementById('vtypeFilters')
+  vf.innerHTML='<button class="pill active" onclick="setVtypeFilter(\'ALL\',this)">All</button>'
+  detectVtypes().forEach(v=>{const b=document.createElement('button');b.className='pill';b.textContent=v;b.onclick=function(){setVtypeFilter(v,this)};vf.appendChild(b)})
 }
-function showPartyPreview(noSalesman) {
-  document.getElementById('partyPreview').style.display = 'block'
-  document.getElementById('partyCount').textContent = partyRows.length + ' parties'
-  const warn = document.getElementById('joinWarn')
-  if (noSalesman > 0) {
-    warn.style.display='block'
-    warn.textContent = `⚠ ${noSalesman} parties have a Town Code with no salesman in the CID master. They'll upload but won't show for any salesman until you assign one. Upload Book1 first if you haven't.`
-  } else warn.style.display='none'
-  document.getElementById('partyBody').innerHTML = partyRows.slice(0,10).map(r =>
-    `<tr><td>${r.party_name}</td><td>${r.cid}</td><td>${r.town||''}</td><td>${r.village_type||''}</td><td>${r.party_lat||''}</td><td>${r.party_long||''}</td><td>${r._salesman||'<span style=color:#A32D2D>none</span>'}</td></tr>`
-  ).join('')
-}
-function clearParty() { partyRows=[]; document.getElementById('partyPreview').style.display='none'; document.getElementById('partyInput').value='' }
+function setStateFilter(v,el){activeState=v;document.querySelectorAll('#stateFilters .pill').forEach(c=>c.classList.remove('active'));el.classList.add('active');applyFilters()}
+function setVtypeFilter(v,el){activeVtype=v;document.querySelectorAll('#vtypeFilters .pill').forEach(c=>c.classList.remove('active'));el.classList.add('active');applyFilters()}
+function applyFilters(){const from=document.getElementById('dateFrom').value,to=document.getElementById('dateTo').value;filteredData=allData.filter(r=>{if(activeState!=='ALL'&&r.state!==activeState)return false;if(activeVtype!=='ALL'&&r.village_type!==activeVtype)return false;if(from&&r.submission_time<from)return false;if(to&&r.submission_time>to+'T23:59:59')return false;return true});renderAll()}
+function switchView(v,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.view').forEach(x=>x.style.display='none');document.getElementById('view-'+v).style.display='block';if(v==='main'&&map)setTimeout(()=>map.invalidateSize(),100)}
 
-async function uploadParties() {
-  if (!partyRows.length) return
-  const btn = document.getElementById('partyUploadBtn'); btn.disabled=true; btn.textContent='Uploading...'
-  document.getElementById('partyProgress').style.display='block'
-  // strip _salesman helper before insert
-  const clean = partyRows.map(({_salesman, ...rest}) => rest)
-  const BATCH=200; let done=0
-  for (let i=0;i<clean.length;i+=BATCH) {
-    const batch = clean.slice(i,i+BATCH)
-    const { error } = await sb.from('assigned_parties').insert(batch)
-    if (error) { showStatus('partyStatus','error','Error: '+error.message); btn.disabled=false; btn.textContent='Upload parties'; return }
-    done += batch.length
-    const pct = Math.round(done/clean.length*100)
-    document.getElementById('partyProgFill').style.width=pct+'%'
-    document.getElementById('partyProgLabel').textContent=`Uploading... ${pct}%`
-  }
-  btn.disabled=false; btn.textContent='Upload parties'
-  showStatus('partyStatus','success',`Done! ${done} parties uploaded.`)
-  clearParty(); loadStats()
+function kpiCalc(rows){const v=rows.length;const on=rows.filter(r=>r.status==='Onboarded').length;const op=rows.filter(r=>r.status==='Open').length;const cl=rows.filter(r=>r.status==='Closed').length;const dn=rows.filter(r=>r.status==="Doesn't Exist"||r.status==='Not Available').length;const cv=v>0?((on/v)*100).toFixed(1):'0.0';return{visited:v,onboarded:on,open:op,closed:cl,doesnt:dn,conv:cv}}
+
+function renderAll(){renderCovBoxes();renderCounters();renderKPIs();renderTodayKPIs();renderCoverage();renderStatusBreakdown();renderPartyTypeBreakdown();renderVtypeGrid();renderExistNew();renderTeamTable();renderDistrictTable();renderHierarchy();renderMap();renderTownTracker();renderTownList();renderComboTable();renderPartyList()}
+
+function renderCovBoxes(){const cids=activeState==='ALL'?cidMaster:cidMaster.filter(c=>c.state===activeState);const districts=new Set(cids.map(c=>c.district).filter(Boolean));const audited=new Set(filteredData.map(r=>r.district).filter(Boolean));const started=[...audited].filter(d=>districts.has(d)).length;document.getElementById('cov-requested').textContent=districts.size;document.getElementById('cov-received').textContent=districts.size;document.getElementById('cov-pending').textContent=0;document.getElementById('cov-started').textContent=started}
+
+function renderCounters(){
+  const cids=activeState==='ALL'?cidMaster:cidMaster.filter(c=>c.state===activeState)
+  const tehsils=new Set(cids.map(c=>c.tehsil).filter(Boolean))
+  const towns=new Set(cids.map(c=>c.cid))
+  const tehStarted=new Set(filteredData.map(r=>r.tehsil).filter(Boolean))
+  const partiesByTehsil={},partiesByTown={}
+  assignedParties.forEach(p=>{if(activeState!=='ALL'&&p.state!==activeState)return;(partiesByTehsil[p.tehsil]=partiesByTehsil[p.tehsil]||[]).push(p);const k=`${p.state}|${p.district}|${p.town}`;(partiesByTown[k]=partiesByTown[k]||[]).push(p)})
+  const submittedIds=new Set(filteredData.filter(r=>r.party_id).map(r=>r.party_id))
+  let tehC=0;Object.values(partiesByTehsil).forEach(ps=>{if(ps.every(p=>submittedIds.has(p.party_id)))tehC++})
+  const townsStarted=new Set();filteredData.forEach(r=>{if(r.town)townsStarted.add(`${r.state}|${r.district}|${r.town}`)})
+  let tC=0;Object.values(partiesByTown).forEach(ps=>{if(ps.every(p=>submittedIds.has(p.party_id)))tC++})
+  document.getElementById('teh-total').textContent=tehsils.size
+  document.getElementById('teh-started').textContent=[...tehStarted].filter(t=>tehsils.has(t)).length
+  document.getElementById('teh-completed').textContent=tehC
+  document.getElementById('tw-total').textContent=towns.size
+  document.getElementById('tw-started').textContent=townsStarted.size
+  document.getElementById('tw-completed').textContent=tC
 }
 
-// === STATS ===
-async function loadStats() {
-  const [cid, parties, subs] = await Promise.all([
-    sb.from('cid_master').select('cid,salesman', { count:'exact' }),
-    sb.from('assigned_parties').select('party_id', { count:'exact', head:true }),
-    sb.from('submissions').select('id', { count:'exact', head:true })
-  ])
-  document.getElementById('statCid').textContent = cid.count ?? '0'
-  document.getElementById('statParties').textContent = parties.count ?? '0'
-  document.getElementById('statSubs').textContent = subs.count ?? '0'
-  const salesmen = new Set((cid.data||[]).map(r => r.salesman).filter(Boolean))
-  document.getElementById('statSalesmen').textContent = salesmen.size
-}
+function renderKPIs(){const k=kpiCalc(filteredData);document.getElementById('kpi-visited').textContent=k.visited.toLocaleString();document.getElementById('kpi-onboarded').textContent=k.onboarded.toLocaleString();document.getElementById('kpi-open').textContent=k.open.toLocaleString();document.getElementById('kpi-closed').textContent=k.closed.toLocaleString();document.getElementById('kpi-doesnt').textContent=k.doesnt.toLocaleString();document.getElementById('kpi-conv').textContent=k.conv+'%'}
+function renderTodayKPIs(){const k=kpiCalc(filteredData.filter(r=>r.submission_time?.startsWith(today)));document.getElementById('today-visited').textContent=k.visited;document.getElementById('today-onboarded').textContent=k.onboarded;document.getElementById('today-open').textContent=k.open;document.getElementById('today-closed').textContent=k.closed;document.getElementById('today-doesnt').textContent=k.doesnt;document.getElementById('today-conv').textContent=k.conv+'%'}
 
-async function clearParties() {
-  if (!confirm('Delete ALL assigned parties? Submissions are kept.')) return
-  await sb.from('assigned_parties').delete().neq('party_id','00000000-0000-0000-0000-000000000000')
-  loadStats(); showStatus('generalStatus','info','All parties cleared.')
-}
-async function clearCidMaster() {
-  if (!confirm('Delete the entire CID master? Parties will lose their salesman link.')) return
-  await sb.from('cid_master').delete().neq('cid',-1)
-  loadStats(); showStatus('generalStatus','info','CID master cleared.')
-}
+function renderCoverage(){let assigned=assignedParties;if(activeState!=='ALL')assigned=assigned.filter(p=>p.state===activeState);if(activeVtype!=='ALL')assigned=assigned.filter(p=>p.village_type===activeVtype);const total=assigned.length;const ids=new Set(filteredData.filter(r=>r.party_id).map(r=>r.party_id));const valid=assigned.filter(p=>ids.has(p.party_id)).length;const pending=total-valid;const cov=total>0?((valid/total)*100).toFixed(1):'0.0';const newP=filteredData.filter(r=>r.source==='new').length;const salesmen=new Set(filteredData.map(r=>r.salesman).filter(Boolean)).size;const flagged=filteredData.filter(r=>r.location_flag==='far').length;document.getElementById('kpi-assigned').textContent=total.toLocaleString();document.getElementById('kpi-validated').textContent=valid.toLocaleString();document.getElementById('kpi-pending').textContent=pending.toLocaleString();document.getElementById('kpi-coverage').textContent=cov+'%';document.getElementById('kpi-new').textContent=newP.toLocaleString();document.getElementById('kpi-salesmen').textContent=salesmen;document.getElementById('kpi-salesmen-lbl').innerHTML=flagged>0?`Salesmen · <span style="color:#A32D2D">⚠ ${flagged} flagged</span>`:'Salesmen active'}
 
-function showStatus(id,type,msg) {
-  const el = document.getElementById(id)
-  el.className='status-msg '+type; el.textContent=msg; el.style.display='block'
-  if (type==='success'||type==='info') setTimeout(()=>el.style.display='none',5000)
-}
+function renderStatusBreakdown(){const k=kpiCalc(filteredData);const t=k.visited||1;document.getElementById('breakdownTotal').textContent=t+' total';const segs=[[k.onboarded,'#1D9E75'],[k.open,'#EF9F27'],[k.closed,'#888780'],[k.doesnt,'#E24B4A']];document.getElementById('statusBarTrack').innerHTML=segs.map(s=>`<div class="status-bar-seg" style="width:${(s[0]/t*100).toFixed(1)}%;background:${s[1]}"></div>`).join('');const lbls=['Onboarded','Open','Closed','Not avail.'];document.getElementById('statusLegend').innerHTML=segs.map((s,i)=>`<div class="status-legend-item"><div class="legend-dot" style="background:${s[1]}"></div>${lbls[i]} <strong>${s[0]}</strong></div>`).join('')}
+function renderPartyTypeBreakdown(){const n=filteredData.filter(r=>r.party_type==='New').length;const e=filteredData.filter(r=>r.party_type==='Existing').length;const t=(n+e)||1;document.getElementById('partyTypeBar').innerHTML=`<div class="status-bar-seg" style="width:${(n/t*100).toFixed(1)}%;background:#0F6E56"></div><div class="status-bar-seg" style="width:${(e/t*100).toFixed(1)}%;background:#378ADD"></div>`;document.getElementById('partyTypeLegend').innerHTML=`<div class="status-legend-item"><div class="legend-dot" style="background:#0F6E56"></div>New <strong>${n}</strong></div><div class="status-legend-item"><div class="legend-dot" style="background:#378ADD"></div>Existing <strong>${e}</strong></div>`}
 
-loadStats()
+function renderVtypeGrid(){const types=detectVtypes();document.getElementById('vtypeGrid').innerHTML=types.map(t=>{const rows=filteredData.filter(r=>r.village_type===t);const k=kpiCalc(rows);const cls=vtypeClass(t);return `<div class="vtype-card ${cls}"><div class="vtype-hdr"><span class="vtype-name ${cls}">${t} Towns</span><span class="vtype-total">${k.visited} visits</span></div><div class="vtype-stats"><div class="vtype-stat"><div class="vtype-stat-num" style="color:#0F6E56">${k.onboarded}</div><div class="vtype-stat-lbl">Onboarded</div></div><div class="vtype-stat"><div class="vtype-stat-num" style="color:#854F0B">${k.open}</div><div class="vtype-stat-lbl">Open</div></div><div class="vtype-stat"><div class="vtype-stat-num" style="color:#5F5E5A">${k.closed}</div><div class="vtype-stat-lbl">Closed</div></div><div class="vtype-stat"><div class="vtype-stat-num" style="color:#185FA5">${k.conv}%</div><div class="vtype-stat-lbl">Conv %</div></div></div></div>`}).join('')||'<div class="empty">No data</div>'}
+
+function existNewCalc(rows,type){const r=rows.filter(x=>x.party_type===type);const v=r.length,on=r.filter(x=>x.status==='Onboarded').length,op=r.filter(x=>x.status==='Open').length;return{visited:v,open:op,onboarded:on,conv:v>0?((on/v)*100).toFixed(1):'0.0'}}
+function renderExistNew(){const mk=src=>['Existing','New'].map(t=>{const k=existNewCalc(src,t);return `<tr><td>${t}</td><td class="num">${k.visited}</td><td class="num">${k.open}</td><td class="num">${k.onboarded}</td><td class="num pct-cell">${k.conv}%</td></tr>`}).join('');document.getElementById('existNewOverallBody').innerHTML=mk(filteredData);document.getElementById('existNewTodayBody').innerHTML=mk(filteredData.filter(r=>r.submission_time?.startsWith(today)))}
+
+function switchTeamTab(t,el){teamTab=t;el.parentElement.querySelectorAll('.mini-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderTeamTable()}
+function renderTeamTable(){const src=teamTab==='today'?filteredData.filter(r=>r.submission_time?.startsWith(today)):filteredData;const teams=[...new Set(src.map(r=>r.salesman).filter(Boolean))].sort();document.getElementById('teamBody').innerHTML=teams.length?teams.map(t=>{const rows=src.filter(r=>r.salesman===t);const k=kpiCalc(rows);const fg=rows.filter(r=>r.location_flag==='far').length;const p=k.conv>=30?'pct-cell':k.conv>=15?'pct-cell warn':'pct-cell low';return `<tr><td><strong>${t}</strong></td><td class="num">${k.visited}</td><td class="num">${k.onboarded}</td><td class="num ${p}">${k.conv}%</td><td class="num ${fg>0?'pct-cell low':''}">${fg>0?'⚠ '+fg:'0'}</td></tr>`}).join(''):'<tr><td colspan="5" class="empty">No data</td></tr>'}
+function switchDistrictTab(t,el){districtTab=t;el.parentElement.querySelectorAll('.mini-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderDistrictTable()}
+function renderDistrictTable(){const src=districtTab==='today'?filteredData.filter(r=>r.submission_time?.startsWith(today)):filteredData;const ds=[...new Set(src.map(r=>r.district).filter(Boolean))].sort();document.getElementById('districtBody').innerHTML=ds.length?ds.map(d=>{const rows=src.filter(r=>r.district===d);const k=kpiCalc(rows);const p=k.conv>=30?'pct-cell':k.conv>=15?'pct-cell warn':'pct-cell low';return `<tr><td>${d}</td><td class="num">${k.visited}</td><td class="num">${k.onboarded}</td><td class="num ${p}">${k.conv}%</td></tr>`}).join(''):'<tr><td colspan="4" class="empty">No data</td></tr>'}
+
+function renderHierarchy(){const s=document.getElementById('hierarchySearch').value.toLowerCase();const rows=filteredData.filter(r=>!s||[r.district,r.tehsil,r.town].some(v=>v?.toLowerCase().includes(s)));const grps={};rows.forEach(r=>{const k=`${r.district}|${r.tehsil}|${r.town}`;if(!grps[k])grps[k]={district:r.district,tehsil:r.tehsil,town:r.town,type:r.village_type,rows:[]};grps[k].rows.push(r)});const sorted=Object.values(grps).sort((a,b)=>(a.district+a.tehsil+a.town).localeCompare(b.district+b.tehsil+b.town));document.getElementById('hierarchyBody').innerHTML=sorted.length?sorted.map(g=>{const k=kpiCalc(g.rows);const p=k.conv>=30?'pct-cell':k.conv>=15?'pct-cell warn':'pct-cell low';return `<tr><td>${g.district||'—'}</td><td>${g.tehsil||'—'}</td><td>${g.town||'—'}</td><td><span class="status-badge" style="background:#F1EFE8;color:#5F5E5A">${g.type||'—'}</span></td><td class="num">${k.visited}</td><td class="num">${k.onboarded}</td><td class="num">${k.open}</td><td class="num ${p}">${k.conv}%</td></tr>`}).join(''):'<tr><td colspan="8" class="empty">No data</td></tr>'}
+
+const statusColors={'Onboarded':'#1D9E75','Open':'#EF9F27','Closed':'#888780',"Doesn't Exist":'#E24B4A','Not Available':'#E24B4A'}
+function renderMap(){const pts=filteredData.filter(r=>r.latitude&&r.longitude);document.getElementById('mapCount').textContent=`${pts.length} geotagged · ${pts.filter(r=>r.location_flag==='far').length} flagged`;if(!map){map=L.map('mapContainer',{scrollWheelZoom:false});L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(map);markerLayer=L.layerGroup().addTo(map);map.setView([26.15,85.9],7)}markerLayer.clearLayers();if(!pts.length)return;pts.forEach(r=>{const c=statusColors[r.status]||'#888780';const fg=r.location_flag==='far';const m=L.circleMarker([r.latitude,r.longitude],{radius:fg?9:7,fillColor:c,color:fg?'#E24B4A':'#fff',weight:fg?3:2,fillOpacity:0.9});const p=`<b>${r.party_name||'Unnamed'}</b><br>${r.status||''}<br>${[r.town,r.district].filter(Boolean).join(', ')}<br>${r.salesman?'Salesman: '+r.salesman+'<br>':''}${fg?`<span style="color:#A32D2D">⚠ ${r.distance_from_centre?r.distance_from_centre.toFixed(1)+' km from town':'Flagged'}</span><br>`:''}${r.submission_time?new Date(r.submission_time).toLocaleString():''}`;m.bindPopup(p);m.on('click',()=>{window._partyRows=window._partyRows||{};window._partyRows[r.id]=r});m.on('dblclick',()=>openDetail(r.id));markerLayer.addLayer(m)});map.fitBounds(L.latLngBounds(pts.map(r=>[r.latitude,r.longitude])),{padding:[30,30],maxZoom:12})}
+
+function classifyTown(subs){if(!subs.length)return'notVisited';if(subs.some(s=>s.status==='Onboarded'))return'onboarded';if(subs.some(s=>s.status==='Open'))return'openNotOnboarded';return'visitedNoOpen'}
+function getTownStats(){const towns={};assignedParties.forEach(p=>{if(activeState!=='ALL'&&p.state!==activeState)return;if(activeVtype!=='ALL'&&p.village_type!==activeVtype)return;const k=`${p.state}|${p.district}|${p.tehsil||''}|${p.town}|${p.cid}`;if(!towns[k])towns[k]={state:p.state,district:p.district,tehsil:p.tehsil,town:p.town,cid:p.cid,vtype:p.village_type,parties:[],subs:[]};towns[k].parties.push(p)});const idToTown={};Object.entries(towns).forEach(([k,t])=>t.parties.forEach(p=>idToTown[p.party_id]=k));filteredData.forEach(s=>{if(s.party_id&&idToTown[s.party_id])towns[idToTown[s.party_id]].subs.push(s);else{const k=`${s.state}|${s.district}|${s.tehsil||''}|${s.town}|${s.cid}`;if(towns[k])towns[k].subs.push(s)}});return Object.values(towns)}
+
+function renderTownTracker(){const types=detectVtypes();const towns=getTownStats();document.getElementById('ttSummary').textContent=`${towns.length} towns`;const grid=document.getElementById('ttSummaryGrid');grid.innerHTML=types.map(vt=>{const vtT=towns.filter(t=>t.vtype===vt);let nv=0,ob=0,op=0,vn=0;vtT.forEach(t=>{const c=classifyTown(t.subs);if(c==='notVisited')nv++;else if(c==='onboarded')ob++;else if(c==='openNotOnboarded')op++;else vn++});const cls=vtypeClass(vt);return `<div class="tt-vt-card ${cls}"><div class="tt-vt-hdr"><span class="tt-vt-name ${cls}">${vt}</span><span class="vtype-total">${vtT.length} towns</span></div><div class="tt-vt-stats"><div class="tt-vt-stat nv"><div class="tt-vt-stat-num">${nv}</div><div class="tt-vt-stat-lbl">Not visited</div></div><div class="tt-vt-stat on"><div class="tt-vt-stat-num">${ob}</div><div class="tt-vt-stat-lbl">Onboarded ≥1</div></div><div class="tt-vt-stat op"><div class="tt-vt-stat-num">${op}</div><div class="tt-vt-stat-lbl">Open, no onb.</div></div><div class="tt-vt-stat vn"><div class="tt-vt-stat-num">${vn}</div><div class="tt-vt-stat-lbl">Visited, no open</div></div></div></div>`}).join('')||'<div class="empty">Load assigned parties in admin</div>';let cnt={all:towns.length,notVisited:0,onboarded:0,openNotOnboarded:0,visitedNoOpen:0};towns.forEach(t=>{const c=classifyTown(t.subs);if(cnt[c]!==undefined)cnt[c]++});document.getElementById('tt-all').textContent=`All ${cnt.all}`;document.getElementById('tt-nv').textContent=`Not visited ${cnt.notVisited}`;document.getElementById('tt-on').textContent=`Onboarded ≥1  ${cnt.onboarded}`;document.getElementById('tt-op').textContent=`Open, no onb. ${cnt.openNotOnboarded}`;document.getElementById('tt-vn').textContent=`Visited, no open ${cnt.visitedNoOpen}`}
+
+function setTtFilter(f,el){ttFilter=f;el.parentElement.querySelectorAll('.tt-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderTownList()}
+function toggleTtSort(){ttSortBy=ttSortBy==='progress'?'name':ttSortBy==='name'?'district':'progress';document.getElementById('ttSortBtn').textContent='Sort: '+(ttSortBy==='progress'?'Progress ↓':ttSortBy==='name'?'Name ↑':'District ↑');renderTownList()}
+
+function renderTownList(){const towns=getTownStats();let list=ttFilter==='all'?towns:towns.filter(t=>classifyTown(t.subs)===ttFilter);if(ttSortBy==='progress')list.sort((a,b)=>(b.subs.length/Math.max(b.parties.length,1))-(a.subs.length/Math.max(a.parties.length,1)));else if(ttSortBy==='name')list.sort((a,b)=>(a.town||'').localeCompare(b.town||''));else list.sort((a,b)=>(a.district+a.town).localeCompare(b.district+b.town));const tL={notVisited:'Not visited',onboarded:'Onboarded ≥1',openNotOnboarded:'Open, no onb.',visitedNoOpen:'Visited, no open'};const tB={notVisited:'#F1EFE8;color:#5F5E5A',onboarded:'#E1F5EE;color:#0F6E56',openNotOnboarded:'#FAEEDA;color:#854F0B',visitedNoOpen:'#FCEBEB;color:#A32D2D'};const cont=document.getElementById('townList');const shown=list.slice(0,300);cont.innerHTML=shown.length?shown.map(t=>{const c=classifyTown(t.subs);const total=t.parties.length,done=t.subs.length;const pct=total>0?Math.round(done/total*100):0;const on=t.subs.filter(s=>s.status==='Onboarded').length;const op=t.subs.filter(s=>s.status==='Open').length;const cl=t.subs.filter(s=>s.status==='Closed').length;const na=t.subs.filter(s=>s.status==="Doesn't Exist"||s.status==='Not Available').length;const barCls=c==='openNotOnboarded'?'amber':c==='visitedNoOpen'?'red':'green';const pctCls=c==='notVisited'?'gray':c==='openNotOnboarded'?'amber':c==='visitedNoOpen'?'red':'green';const lastSub=t.subs.length?t.subs.map(s=>new Date(s.submission_time)).sort((a,b)=>b-a)[0]:null;const lastTxt=lastSub?'Last visit: '+lastSub.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):'No visits yet';const cidInfo=cidMaster.find(x=>x.cid===t.cid);const salesman=cidInfo?.salesman||'—';const vtCls=vtypeClass(t.vtype);const vtBg=vtCls==='p1'?'#E1F5EE;color:#0F6E56':vtCls==='p2'?'#E6F1FB;color:#185FA5':vtCls==='p3'?'#FAEEDA;color:#854F0B':'#EEEDFE;color:#3C3489';return `<div class="town-row" onclick="filterPartyListByTown('${(t.town||'').replace(/'/g,"\\'")}')"><div class="town-row-top"><div class="town-name-wrap"><div class="town-name-row">${t.town||'—'} <span class="status-badge" style="background:${vtBg}">${t.vtype||''}</span> <span class="status-badge" style="background:${tB[c]}">${tL[c]}</span></div><div class="town-meta">${t.tehsil||''} · ${t.district||''} · CID ${t.cid||''} · Salesman ${salesman}</div></div><div class="town-progress-side"><div class="town-pct ${pctCls}">${pct}%</div><div class="town-ratio">${done} of ${total} parties</div></div></div><div class="town-bar-track"><div class="town-bar-fill ${barCls}" style="width:${pct}%"></div></div><div class="town-stats">${done===0?`<span style="color:#9C9A92">No visits yet — ${total} parties pending</span>`:`<span>Onboarded <strong style="color:#0F6E56">${on}</strong></span><span>Open <strong style="color:#854F0B">${op}</strong></span><span>Closed <strong>${cl}</strong></span><span>Not avail. <strong style="color:#A32D2D">${na}</strong></span>`}<span style="margin-left:auto;color:#9C9A92">${lastTxt}</span></div></div>`}).join(''):'<div class="empty">No towns match this filter</div>';document.getElementById('townCountBar').textContent=`Showing ${shown.length} of ${list.length} towns${list.length>300?' (first 300)':''}`}
+
+function filterPartyListByTown(town){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab')[2].classList.add('active');document.querySelectorAll('.view').forEach(v=>v.style.display='none');document.getElementById('view-parties').style.display='block';document.getElementById('partySearch').value=town;renderPartyList();window.scrollTo({top:0,behavior:'smooth'})}
+
+function renderComboTable(){const s=(document.getElementById('comboSearch')?.value||'').toLowerCase();const towns=getTownStats();const tL={notVisited:'Not visited',onboarded:'Onboarded ≥1',openNotOnboarded:'Open, no onb.',visitedNoOpen:'Visited, no open'};const tC={notVisited:'#888780',onboarded:'#0F6E56',openNotOnboarded:'#BA7517',visitedNoOpen:'#A32D2D'};let rows=towns;if(s)rows=rows.filter(t=>[t.town,t.tehsil,t.district].some(v=>v?.toLowerCase().includes(s)));rows.sort((a,b)=>(`${a.district}${a.tehsil}${a.town}`).localeCompare(`${b.district}${b.tehsil}${b.town}`));document.getElementById('comboBody').innerHTML=rows.length?rows.map(t=>{const cls=classifyTown(t.subs);const v=t.subs.length,op=t.subs.filter(s=>s.status==='Open').length,on=t.subs.filter(s=>s.status==='Onboarded').length,cl=t.subs.filter(s=>s.status==='Closed').length;return `<tr><td>${t.district||'—'}</td><td>${t.tehsil||'—'}</td><td>${t.town||'—'}</td><td><span class="status-badge" style="background:#F1EFE8;color:#5F5E5A">${t.vtype||'—'}</span></td><td><span class="status-badge" style="background:${tC[cls]}22;color:${tC[cls]}">${tL[cls]}</span></td><td class="num">${t.parties.length}</td><td class="num">${v}</td><td class="num">${op}</td><td class="num">${on}</td><td class="num">${cl}</td></tr>`}).join(''):'<tr><td colspan="10" class="empty">No towns</td></tr>'}
+
+function renderPartyList(){const s=document.getElementById('partySearch').value.toLowerCase();const sF=document.getElementById('partyStatusFilter').value;const tF=document.getElementById('partyTypeFilter').value;const fF=document.getElementById('partyFlagFilter')?.value||'';const rows=filteredData.filter(r=>{if(sF&&r.status!==sF)return false;if(tF&&r.party_type!==tF)return false;if(fF&&(r.location_flag||'ok')!==fF)return false;if(s&&![r.party_name,r.owner_name,r.phone,r.town].some(v=>v?.toLowerCase().includes(s)))return false;return true});const bC=x=>x==='Onboarded'?'badge-onboarded':x==='Open'?'badge-open':x==='Closed'?'badge-closed':'badge-doesnt';window._partyRows={};const shown=rows.slice(0,500);document.getElementById('partyTableBody').innerHTML=shown.length?shown.map(r=>{window._partyRows[r.id]=r;const dt=r.submission_time?new Date(r.submission_time):null;const ts=dt?dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})+' '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'—';const d=r.location_flag==='far'?`<span style="color:#A32D2D">⚠ ${r.distance_from_centre?r.distance_from_centre.toFixed(1)+'km':'far'}</span>`:(r.distance_from_centre!=null?r.distance_from_centre.toFixed(1)+'km':'—');return `<tr class="${r.location_flag==='far'?'flagged':''}" onclick="openDetail('${r.id}')"><td>${r.photo_url?`<img class="pt-photo" src="${r.photo_url}" loading="lazy">`:'<div class="pt-photo-empty">none</div>'}</td><td><strong>${r.party_name||'—'}</strong></td><td>${r.party_type||'—'}${r.source==='new'?' <span style="color:#534AB7">(new)</span>':''}</td><td><span class="status-badge ${bC(r.status)}">${r.status||'—'}</span></td><td>${r.owner_name||'—'}</td><td>${r.phone||'—'}</td><td>${r.town||'—'}</td><td>${r.district||'—'}</td><td>${r.village_type||'—'}</td><td>${r.salesman||r.agent_name||'—'}</td><td>${d}</td><td>${ts}</td><td class="pt-remarks" title="${(r.remarks||'').replace(/"/g,'&quot;')}">${r.remarks||'—'}</td></tr>`}).join(''):'<tr><td colspan="13" class="empty">No parties match</td></tr>';document.getElementById('partyCountBar').textContent=`Showing ${shown.length} of ${rows.length} submissions${rows.length>500?' (first 500 — narrow with filters)':''}`}
+
+function openDetail(id){const r=(window._partyRows||{})[id];if(!r)return;const bC=x=>x==='Onboarded'?'badge-onboarded':x==='Open'?'badge-open':x==='Closed'?'badge-closed':'badge-doesnt';const dt=r.submission_time?new Date(r.submission_time):null;const fmt=dt?dt.toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';const gm=(r.latitude&&r.longitude)?`https://maps.google.com/?q=${r.latitude},${r.longitude}`:null;document.getElementById('detailModal').innerHTML=`${r.photo_url?`<img class="detail-photo" src="${r.photo_url}">`:'<div class="detail-photo-empty">No photo captured</div>'}<div class="detail-body"><div class="detail-head"><div><div class="detail-name">${r.party_name||'—'}</div><div class="detail-sub">${[r.town,r.district,r.state].filter(Boolean).join(', ')||'—'}</div></div><button class="detail-close" onclick="closeDetail()">×</button></div><div class="detail-status-row"><span class="status-badge ${bC(r.status)}">${r.status||'—'}</span>${r.village_type?`<span class="status-badge" style="background:#F1EFE8;color:#5F5E5A">${r.village_type}</span>`:''}${r.party_type?`<span class="status-badge" style="background:#EEEDFE;color:#3C3489">${r.party_type}</span>`:''}${r.source==='new'?`<span class="status-badge" style="background:#EEEDFE;color:#534AB7">New party</span>`:''}</div>${r.location_flag==='far'?`<div class="detail-flag">⚠ Salesman was ${r.distance_from_centre?r.distance_from_centre.toFixed(1)+' km':'far'} from town centre at submission</div>`:''}<div class="detail-grid"><div class="detail-cell"><div class="detail-cell-label">Owner</div><div class="detail-cell-value">${r.owner_name||'—'}</div></div><div class="detail-cell"><div class="detail-cell-label">Phone</div><div class="detail-cell-value">${r.phone?`<a href="tel:${r.phone}">${r.phone}</a>`:'—'}</div></div><div class="detail-cell"><div class="detail-cell-label">Salesman</div><div class="detail-cell-value">${r.salesman||r.agent_name||'—'}</div></div><div class="detail-cell"><div class="detail-cell-label">Sales team</div><div class="detail-cell-value">${r.sales_team||'—'}</div></div><div class="detail-cell"><div class="detail-cell-label">Date & time</div><div class="detail-cell-value">${fmt}</div></div><div class="detail-cell"><div class="detail-cell-label">CID / Town code</div><div class="detail-cell-value">${r.cid||'—'}</div></div><div class="detail-cell"><div class="detail-cell-label">Tehsil</div><div class="detail-cell-value">${r.tehsil||'—'}</div></div><div class="detail-cell"><div class="detail-cell-label">Activation date</div><div class="detail-cell-value">${r.estimated_activation_date||'—'}</div></div><div class="detail-cell full"><div class="detail-cell-label">GPS coordinates (from camera)</div><div class="detail-cell-value">${gm?`<a href="${gm}" target="_blank">📍 ${r.latitude.toFixed(6)}, ${r.longitude.toFixed(6)} — open in Maps</a>`:'No GPS recorded'}</div></div></div><div class="detail-cell-label" style="margin-bottom:6px">Remarks</div><div class="detail-remarks">${r.remarks||'No remarks entered'}</div></div>`;document.getElementById('detailOverlay').classList.add('open')}
+function closeDetail(){document.getElementById('detailOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail()})
+
+function exportExcel(){const rows=filteredData.map(r=>({'Time':r.submission_time,'Salesman':r.salesman,'Party':r.party_name,'Type':r.party_type,'RTR':r.rtr_id,'Status':r.status,'Owner':r.owner_name,'Phone':r.phone,'State':r.state,'District':r.district,'Tehsil':r.tehsil,'Town':r.town,'CID':r.cid,'Village Type':r.village_type,'Sales team':r.sales_team,'Outlet universe':r.estimated_outlet_universe,'Activation':r.estimated_activation_date,'Latitude':r.latitude,'Longitude':r.longitude,'Distance (km)':r.distance_from_centre,'Flag':r.location_flag,'Source':r.source,'Remarks':r.remarks}));const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Submissions');XLSX.writeFile(wb,`party_onboarding_${today}.xlsx`)}
+
+loadConfig().then(loadData)
+setInterval(loadData,120000)
 </script>
 </body>
 </html>
