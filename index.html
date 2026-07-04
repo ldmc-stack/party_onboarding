@@ -3,448 +3,463 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Party Onboarding Dashboard</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<title>Party Onboarding Project</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:#F4F3EF;color:#1a1a1a;min-height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F0F0EC;color:#1a1a1a;min-height:100vh}
 
-/* HEADER */
-.header{background:#0F6E56;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
-.header-left{display:flex;align-items:center;gap:12px}
-.logo{width:28px;height:28px;background:rgba(255,255,255,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px}
-.header h1{color:#fff;font-size:15px;font-weight:500}
-.header-right{display:flex;align-items:center;gap:8px}
-.header-btn{background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
-.header-btn:hover{background:rgba(255,255,255,0.25)}
-.sync-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75;display:inline-block}
-.sync-dot.syncing{background:#EF9F27;animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+/* ========== HERO HEADER ========== */
+.hero{background:linear-gradient(135deg,#1E3A9C 0%,#2E5AD6 100%);padding:24px 32px;color:#fff;box-shadow:0 4px 20px rgba(30,58,156,0.2)}
+.hero-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px}
+.hero-brand{display:flex;align-items:center;gap:20px;flex:1}
+.hero-logo{width:76px;height:76px;background:#fff;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.hero-logo-brand{font-family:Georgia,serif;font-weight:700;color:#E63946;font-size:15px;line-height:1}
+.hero-logo-tag{font-size:9px;color:#333;margin-top:3px;font-weight:500}
+.hero-title-block{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.hero-title{font-size:36px;font-weight:800;letter-spacing:-0.5px;line-height:1}
+.tracker-pill{background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.35);color:#fff;padding:10px 22px;border-radius:24px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;transition:all 0.2s}
+.tracker-pill:hover,.tracker-pill.active{background:#fff;color:#1E3A9C}
+.hero-actions{display:flex;flex-direction:column;gap:10px}
+.hero-btn{padding:11px 26px;border-radius:26px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;border:none;text-decoration:none;text-align:center;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.12)}
+.hero-btn.white{background:#fff;color:#1E3A9C;border:2px solid #fff}
+.hero-btn.green{background:#D6F5DF;color:#1B7A3E;border:2px solid #7ECC96}
+.hero-btn:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,0.18)}
 
-/* MAIN LAYOUT */
-.main{max-width:1400px;margin:0 auto;padding:20px 24px}
+.state-row{display:flex;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap}
+.state-lbl{font-size:15px;font-weight:600;margin-right:6px}
+.state-pill{padding:9px 24px;border-radius:24px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;background:rgba(30,50,120,0.55);color:#fff;border:1.5px solid rgba(255,255,255,0.35);transition:all 0.2s}
+.state-pill.active,.state-pill:hover{background:#fff;color:#1E3A9C;border-color:#fff}
+.nav-row{display:flex;gap:10px;margin-top:16px}
+.nav-btn{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;text-decoration:none;transition:all 0.2s}
+.nav-btn.active,.nav-btn:hover{background:#fff;color:#1E3A9C;border-color:#fff}
 
-/* STATE FILTER BAR */
-.filter-bar{background:#fff;border-radius:12px;border:0.5px solid #E5E3DC;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.filter-bar label{font-size:12px;color:#73726C;font-weight:500;white-space:nowrap}
-.filter-group{display:flex;gap:6px;flex-wrap:wrap}
-.filter-chip{padding:6px 14px;border-radius:8px;border:1px solid #E5E3DC;background:#F8F7F4;font-size:13px;color:#5F5E5A;cursor:pointer;transition:all 0.15s;font-family:inherit}
-.filter-chip.active{background:#0F6E56;border-color:#0F6E56;color:#fff;font-weight:500}
-.filter-divider{width:1px;height:24px;background:#E5E3DC}
-.date-filter{display:flex;gap:6px;align-items:center}
-.date-filter input{border:1px solid #E5E3DC;border-radius:8px;padding:5px 10px;font-size:12px;color:#1a1a1a;background:#F8F7F4;font-family:inherit;outline:none}
-.date-filter input:focus{border-color:#0F6E56}
-.last-updated{margin-left:auto;font-size:11px;color:#9C9A92}
+/* ========== MAIN ========== */
+.main{max-width:1400px;margin:0 auto;padding:24px}
 
-/* KPI GRID */
-.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
-.kpi-card{background:#fff;border-radius:12px;border:0.5px solid #E5E3DC;padding:16px;position:relative;overflow:hidden}
-.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
-.kpi-card.green::before{background:#1D9E75}
-.kpi-card.amber::before{background:#EF9F27}
-.kpi-card.gray::before{background:#888780}
-.kpi-card.red::before{background:#E24B4A}
-.kpi-card.blue::before{background:#378ADD}
-.kpi-card.teal::before{background:#0F6E56}
-.kpi-card.purple::before{background:#534AB7}
-.kpi-label{font-size:10px;color:#73726C;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;font-weight:500}
-.kpi-value{font-size:28px;font-weight:500;line-height:1;margin-bottom:4px}
-.kpi-value.green{color:#0F6E56}
-.kpi-value.amber{color:#BA7517}
-.kpi-value.gray{color:#5F5E5A}
-.kpi-value.red{color:#A32D2D}
-.kpi-value.blue{color:#185FA5}
-.kpi-delta{font-size:11px;color:#9C9A92}
-.kpi-delta.up{color:#1D9E75}
-.kpi-delta.down{color:#E24B4A}
+.sub-filter{background:#fff;border-radius:12px;padding:14px 20px;margin-bottom:22px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.sub-lbl{font-size:12px;color:#6B6A65;font-weight:600;text-transform:uppercase;letter-spacing:0.6px}
+.vpill{padding:6px 14px;border-radius:18px;border:1px solid #D8D6CC;background:#F5F4EF;font-size:13px;color:#5F5E5A;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s}
+.vpill.active{background:#1E3A9C;border-color:#1E3A9C;color:#fff}
+.date-inp{border:1px solid #D8D6CC;border-radius:6px;padding:6px 10px;font-size:13px;background:#F5F4EF;font-family:inherit;outline:none}
+.date-inp:focus{border-color:#1E3A9C;background:#fff}
+.last-upd{margin-left:auto;font-size:12px;color:#9C9A92}
 
-/* TODAY KPI ROW */
-.today-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
-.today-card{background:#FBFAF7;border-radius:10px;border:1px dashed #D3D1C7;padding:12px}
-.today-label{font-size:10px;color:#9C9A92;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
-.today-value{font-size:20px;font-weight:500;color:#1a1a1a}
+/* ========== BIG WHITE CARDS ========== */
+.big-card{background:#fff;border-radius:20px;padding:32px;margin-bottom:24px;box-shadow:0 3px 12px rgba(0,0,0,0.06)}
+.big-card-title{text-align:center;font-size:30px;font-weight:700;margin-bottom:28px;color:#1a1a1a;letter-spacing:-0.3px}
 
-/* TWO COLUMN LAYOUT */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
-.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+/* ========== STAT BOXES (District Coverage / Unique Tehsils) ========== */
+.stat-boxes{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.stat-box{background:#fff;border:1.5px solid #E5E3DC;border-radius:14px;padding:22px 24px}
+.stat-box-title{text-align:center;font-size:17px;font-weight:700;color:#4A4945;letter-spacing:1px;margin-bottom:18px;padding-bottom:14px;border-bottom:1.5px solid #F1EFE8}
+.stat-inner{display:grid;gap:12px}
+.stat-inner.four{grid-template-columns:repeat(4,1fr)}
+.stat-inner.three{grid-template-columns:repeat(3,1fr)}
+.stat-cell{border-left:5px solid;padding:8px 14px;background:#fff;border-radius:4px}
+.stat-cell.purple{border-left-color:#7F5FE3}
+.stat-cell.blue{border-left-color:#3B6BE0}
+.stat-cell.orange{border-left-color:#F98E30}
+.stat-cell.green{border-left-color:#25A660}
+.stat-cell.red{border-left-color:#E63946}
+.stat-num{font-size:56px;font-weight:700;line-height:1;font-family:Georgia,'Times New Roman',serif}
+.stat-num.purple{color:#7F5FE3}
+.stat-num.blue{color:#3B6BE0}
+.stat-num.orange{color:#F98E30}
+.stat-num.green{color:#25A660}
+.stat-num.red{color:#E63946}
+.stat-lbl{font-size:14px;color:#5F5E5A;margin-top:6px;font-weight:500}
 
-/* CARDS */
-.card{background:#fff;border-radius:12px;border:0.5px solid #E5E3DC;overflow:hidden}
-.card-header{padding:14px 18px;border-bottom:0.5px solid #F1EFE8;display:flex;align-items:center;justify-content:space-between}
-.card-title{font-size:13px;font-weight:500;color:#1a1a1a}
-.card-sub{font-size:11px;color:#9C9A92}
-.card-body{padding:0}
+/* ========== UNIQUE TOWNS ROW ========== */
+.section-lbl{font-size:16px;font-weight:700;color:#4A4945;letter-spacing:1px;margin-top:24px;margin-bottom:14px}
+.utr{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.utr-card{background:#F8F7F4;border-radius:12px;padding:22px 26px;border:1px solid #EDEBE4}
+.utr-num{font-size:64px;font-weight:700;color:#1E3A9C;line-height:1;font-family:Georgia,'Times New Roman',serif}
+.utr-lbl{font-size:14px;color:#4A4945;text-transform:uppercase;letter-spacing:0.6px;margin-top:10px;font-weight:700}
 
-/* STATUS BREAKDOWN */
-.status-bar-wrap{padding:16px 18px}
-.status-bar-track{height:8px;border-radius:4px;background:#F1EFE8;overflow:hidden;display:flex;margin-bottom:12px}
-.status-bar-seg{height:100%;transition:width 0.6s ease}
-.status-legend{display:flex;flex-wrap:wrap;gap:10px}
-.status-legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#5F5E5A}
-.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* ========== VILLAGE TYPE CARDS (7 metrics) ========== */
+.vtc-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:24px}
+.vtc-card{background:#fff;border:1.5px solid #E5E3DC;border-radius:12px;padding:20px;border-top:5px solid}
+.vtc-card.dhq{border-top-color:#7F5FE3}
+.vtc-card.p1{border-top-color:#F98E30}
+.vtc-card.p2{border-top-color:#25A660}
+.vtc-card.p3{border-top-color:#3B6BE0}
+.vtc-name{font-size:20px;font-weight:800;color:#1a1a1a;margin-bottom:16px;letter-spacing:0.5px}
+.vtc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.vtc-cell{padding:6px 0}
+.vtc-num{font-size:34px;font-weight:700;color:#3B6BE0;line-height:1;font-family:Georgia,'Times New Roman',serif}
+.vtc-num.green{color:#25A660}
+.vtc-lbl{font-size:11px;color:#6B6A65;text-transform:uppercase;letter-spacing:0.5px;margin-top:5px;font-weight:600}
 
-/* TABLES */
-.data-table{width:100%;border-collapse:collapse}
-.data-table th{font-size:10px;color:#73726C;text-transform:uppercase;letter-spacing:0.4px;padding:10px 16px;text-align:left;background:#FBFAF7;border-bottom:0.5px solid #E5E3DC;white-space:nowrap}
-.data-table td{font-size:13px;padding:10px 16px;border-bottom:0.5px solid #F1EFE8;color:#1a1a1a}
-.data-table tr:last-child td{border-bottom:none}
-.data-table tr:hover td{background:#FBFAF7}
-.data-table .num{text-align:right;font-variant-numeric:tabular-nums}
-.pct-cell{font-weight:500;color:#0F6E56}
-.pct-cell.warn{color:#BA7517}
-.pct-cell.low{color:#A32D2D}
-.status-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500}
-.badge-onboarded{background:#E5F4ED;color:#0F6E56}
-.badge-open{background:#FAEEDA;color:#854F0B}
-.badge-closed{background:#F1EFE8;color:#5F5E5A}
-.badge-doesnt{background:#FCEBEB;color:#A32D2D}
+/* ========== DATEWISE CHART ========== */
+.chart-wrap{background:#fff;border-radius:16px;padding:24px;margin-bottom:24px;box-shadow:0 3px 12px rgba(0,0,0,0.06)}
+.chart-title{text-align:center;font-size:26px;font-weight:700;color:#1a1a1a;margin-bottom:16px}
+#dwChart{width:100%!important;height:360px!important}
 
-/* VILLAGE TYPE CARDS */
-.vtype-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
-.vtype-card{background:#fff;border-radius:12px;border:0.5px solid #E5E3DC;padding:16px}
-.vtype-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.vtype-title{font-size:14px;font-weight:600;color:#0F6E56}
-.vtype-total{font-size:12px;color:#73726C}
-.vtype-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.vtype-stat{background:#F8F7F4;border-radius:8px;padding:10px}
-.vtype-stat-label{font-size:10px;color:#73726C;margin-bottom:4px}
-.vtype-stat-value{font-size:18px;font-weight:500}
+/* ========== OVERALL + TODAY SIDE-BY-SIDE ========== */
+.side-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.side-card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 3px 12px rgba(0,0,0,0.06)}
+.side-card.today{background:#F0FAF5;border:1.5px solid #C6E6D0}
+.side-title{text-align:center;font-size:22px;font-weight:700;color:#1a1a1a;padding-bottom:14px;border-bottom:1.5px solid #E5E3DC;margin-bottom:18px}
+.side-card.today .side-title{color:#1B7A3E;border-bottom-color:#C6E6D0}
 
-/* PARTY LIST */
-.party-filters{padding:12px 16px;border-bottom:0.5px solid #F1EFE8;display:flex;gap:8px;flex-wrap:wrap}
-.party-search{flex:1;min-width:160px;border:0.5px solid #E5E3DC;border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;outline:none;background:#F8F7F4}
-.party-search:focus{border-color:#0F6E56;background:#fff}
-.party-select{border:0.5px solid #E5E3DC;border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;outline:none;background:#F8F7F4;cursor:pointer}
-.party-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;padding:16px}
+.kpi-6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.kpi-cell{border-left:5px solid;padding:12px 14px;border-radius:6px}
+.kpi-cell.green{border-left-color:#25A660}
+.kpi-cell.orange{border-left-color:#F98E30}
+.kpi-cell.purple{border-left-color:#7F5FE3}
+.kpi-cell.blue{border-left-color:#3B6BE0}
+.kpi-cell.red{border-left-color:#E63946}
+.kpi-cell.gray{border-left-color:#5F5E5A}
+.kpi-cell-num{font-size:48px;font-weight:700;line-height:1;font-family:Georgia,'Times New Roman',serif}
+.kpi-cell.green .kpi-cell-num{color:#25A660}
+.kpi-cell.orange .kpi-cell-num{color:#F98E30}
+.kpi-cell.purple .kpi-cell-num{color:#7F5FE3}
+.kpi-cell.blue .kpi-cell-num{color:#3B6BE0}
+.kpi-cell.red .kpi-cell-num{color:#E63946}
+.kpi-cell.gray .kpi-cell-num{color:#5F5E5A}
+.kpi-cell-lbl{font-size:12px;color:#5F5E5A;text-transform:uppercase;letter-spacing:0.4px;margin-top:8px;font-weight:600}
 
-/* PARTY TABLE (scrollable, scales to thousands) */
-.party-table-wrap{overflow-x:auto;overflow-y:auto;max-height:600px;border-top:0.5px solid #E5E3DC}
-.party-table{width:100%;border-collapse:collapse;min-width:900px}
-.party-table th{font-size:10px;color:#73726C;text-transform:uppercase;letter-spacing:0.4px;padding:9px 12px;text-align:left;background:#FBFAF7;border-bottom:0.5px solid #E5E3DC;white-space:nowrap;position:sticky;top:0;z-index:5}
-.party-table td{font-size:12px;padding:8px 12px;border-bottom:0.5px solid #F1EFE8;white-space:nowrap;color:#1a1a1a}
-.party-table tr{cursor:pointer}
-.party-table tr:hover td{background:#FBFAF7}
-.party-table .pt-photo{width:40px;height:40px;border-radius:6px;object-fit:cover;background:#F1EFE8;display:block}
-.party-table .pt-photo-empty{width:40px;height:40px;border-radius:6px;background:#F1EFE8;display:flex;align-items:center;justify-content:center;font-size:9px;color:#9C9A92}
-.party-table .pt-remarks{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.party-count-bar{padding:10px 16px;font-size:12px;color:#73726C;border-top:0.5px solid #F1EFE8;background:#FBFAF7}
-.party-card{border:0.5px solid #E5E3DC;border-radius:10px;overflow:hidden;background:#fff}
-.party-photo{width:100%;height:120px;object-fit:cover;background:#F1EFE8;display:flex;align-items:center;justify-content:center;color:#9C9A92;font-size:12px}
-.party-photo img{width:100%;height:120px;object-fit:cover}
-.party-info{padding:10px 12px}
-.party-name{font-size:13px;font-weight:500;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.party-meta{font-size:11px;color:#73726C;display:flex;flex-direction:column;gap:2px}
+/* ========== TABLES ========== */
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{background:#3B6BE0;color:#fff;font-weight:700;padding:13px 14px;text-align:center;font-size:14px;letter-spacing:0.3px}
+.side-card.today .tbl th{background:#25A660}
+.tbl td{padding:12px 14px;border-bottom:1px solid #F1EFE8;text-align:center;color:#1a1a1a;font-size:14px}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td:first-child,.tbl th:first-child{text-align:left}
+.tbl tr.total-row td{background:#F8F7F4;font-weight:700;color:#3B6BE0;font-size:15px}
+.side-card.today .tbl tr.total-row td{color:#1B7A3E}
+.tbl .conv{font-weight:700;color:#3B6BE0}
+.side-card.today .tbl .conv{color:#1B7A3E}
+.ptype-pill{display:inline-block;padding:4px 14px;border-radius:14px;font-size:12px;font-weight:600}
+.ptype-pill.existing{background:#EEEDFE;color:#5C4BC7}
+.ptype-pill.new{background:#DCEAFC;color:#2F5FD4}
+.side-scroll{max-height:360px;overflow-y:auto}
 
-/* EXCEL DOWNLOAD */
-.export-btn{background:#fff;border:0.5px solid #E5E3DC;border-radius:8px;padding:7px 14px;font-size:12px;color:#5F5E5A;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
-.export-btn:hover{border-color:#0F6E56;color:#0F6E56}
+/* ========== SECTION CARDS ========== */
+.section-card{background:#fff;border-radius:16px;margin-bottom:24px;box-shadow:0 3px 12px rgba(0,0,0,0.06);overflow:hidden}
+.section-card-hdr{padding:20px 24px;border-bottom:1.5px solid #F1EFE8;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.section-card-title{font-size:20px;font-weight:700;color:#1a1a1a}
+.section-card-sub{font-size:13px;color:#9C9A92}
+.hier-search{border:1px solid #E5E3DC;border-radius:6px;padding:8px 14px;font-size:13px;font-family:inherit;outline:none;width:220px;background:#F8F7F4}
 
-/* SECTION TITLE */
-.section-title{font-size:12px;font-weight:500;color:#73726C;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;margin-top:8px}
+#mapContainer{height:440px;width:100%;z-index:1}
+.map-legend{display:flex;gap:18px;padding:14px 24px;flex-wrap:wrap;background:#FBFAF7;border-top:1px solid #F1EFE8}
+.map-legend-item{display:flex;align-items:center;gap:7px;font-size:13px;color:#5F5E5A;font-weight:500}
+.map-dot{width:10px;height:10px;border-radius:50%}
 
-/* MAP */
-.map-card{margin-bottom:20px}
-#mapContainer{height:420px;width:100%;border-radius:0 0 12px 12px;z-index:1}
-.map-legend{display:flex;gap:14px;padding:10px 18px;border-top:0.5px solid #F1EFE8;flex-wrap:wrap}
-.map-legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#5F5E5A}
-.map-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,0.1)}
-.leaflet-popup-content{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;font-size:12px}
-.leaflet-popup-content b{font-size:13px}
+/* ========== PARTY LIST ========== */
+.party-filters{padding:14px 24px;background:#FBFAF7;display:flex;gap:10px;flex-wrap:wrap;border-bottom:1px solid #F1EFE8}
+.party-search{flex:1;min-width:220px;border:1px solid #E5E3DC;border-radius:8px;padding:9px 14px;font-size:14px;font-family:inherit;outline:none;background:#fff}
+.party-select{border:1px solid #E5E3DC;border-radius:8px;padding:9px 14px;font-size:14px;font-family:inherit;outline:none;background:#fff;cursor:pointer}
+.party-table-wrap{overflow-x:auto;overflow-y:auto;max-height:640px}
+.party-table{width:100%;border-collapse:collapse;min-width:1100px;font-size:13px}
+.party-table th{background:#3B6BE0;color:#fff;font-weight:700;padding:12px 14px;text-align:left;white-space:nowrap;position:sticky;top:0;z-index:5;font-size:12px;letter-spacing:0.3px}
+.party-table td{padding:10px 14px;border-bottom:1px solid #F1EFE8;white-space:nowrap;color:#1a1a1a}
+.party-table tr{cursor:pointer;transition:background 0.1s}
+.party-table tr:hover td{background:#F5F8FE}
+.party-table tr.flagged td{background:#FEF7F5}
+.pt-photo{width:42px;height:42px;border-radius:6px;object-fit:cover;background:#F1EFE8;display:block}
+.pt-photo-empty{width:42px;height:42px;border-radius:6px;background:#F1EFE8;display:flex;align-items:center;justify-content:center;font-size:10px;color:#9C9A92}
+.status-pill{display:inline-block;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px}
+.sp-onboarded{background:#D4F5DE;color:#1B7A3E}
+.sp-open{background:#FBE5C7;color:#8A4A0B}
+.sp-closed{background:#E5E3DC;color:#5F5E5A}
+.sp-doesnt{background:#FBD5D8;color:#9E1F2A}
+.count-bar{padding:14px 24px;font-size:13px;color:#73726C;background:#FBFAF7;font-weight:500}
 
-/* STORE DETAIL MODAL */
-.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
-.detail-overlay.open{display:flex}
-.detail-modal{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:88vh;overflow-y:auto}
-.detail-photo{width:100%;height:280px;object-fit:cover;background:#F1EFE8;display:block;border-radius:16px 16px 0 0}
-.detail-photo-empty{width:100%;height:120px;background:#F1EFE8;display:flex;align-items:center;justify-content:center;color:#9C9A92;font-size:13px;border-radius:16px 16px 0 0}
-.detail-body{padding:20px}
-.detail-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
-.detail-name{font-size:20px;font-weight:600}
-.detail-close{background:#F1EFE8;border:none;border-radius:8px;width:32px;height:32px;font-size:18px;cursor:pointer;color:#5F5E5A;flex-shrink:0}
-.detail-sub{font-size:13px;color:#73726C;margin-bottom:16px}
-.detail-status-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#E5E3DC;border-radius:10px;overflow:hidden;margin-bottom:14px}
-.detail-cell{background:#fff;padding:12px 14px}
-.detail-cell.full{grid-column:1/-1}
-.detail-cell-label{font-size:10px;color:#73726C;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px}
-.detail-cell-value{font-size:14px;color:#1a1a1a;word-break:break-word}
-.detail-cell-value a{color:#185FA5;text-decoration:none}
-.detail-remarks{background:#FBFAF7;border:0.5px solid #E5E3DC;border-radius:10px;padding:14px;font-size:14px;color:#1a1a1a;line-height:1.5;white-space:pre-wrap}
-.detail-flag{background:#FCEBEB;color:#A32D2D;border:0.5px solid #E24B4A;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px}
-.party-card{cursor:pointer;transition:all 0.15s}
-.party-card:active{transform:scale(0.99)}
+.empty{padding:48px;text-align:center;color:#9C9A92;font-size:14px}
 
-/* LOADING */
-.loading-overlay{position:fixed;inset:0;background:#F4F3EF;display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:12px}
-.spinner{width:32px;height:32px;border:3px solid #E5E3DC;border-top-color:#0F6E56;border-radius:50%;animation:spin 0.8s linear infinite}
+/* ========== LOADING / MODAL / TOAST ========== */
+.loading-overlay{position:fixed;inset:0;background:#F0F0EC;display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:14px}
+.spinner{width:36px;height:36px;border:4px solid #E5E3DC;border-top-color:#1E3A9C;border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-size:13px;color:#73726C}
+.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;display:none;align-items:center;justify-content:center;padding:24px}
+.detail-overlay.open{display:flex}
+.detail-modal{background:#fff;border-radius:20px;max-width:580px;width:100%;max-height:88vh;overflow-y:auto}
+.detail-photo{width:100%;height:320px;object-fit:cover;background:#F1EFE8;display:block;border-radius:20px 20px 0 0}
+.detail-photo-empty{width:100%;height:140px;background:#F1EFE8;display:flex;align-items:center;justify-content:center;color:#9C9A92;font-size:14px;border-radius:20px 20px 0 0}
+.detail-body{padding:26px}
+.detail-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.detail-name{font-size:24px;font-weight:700}
+.detail-close{background:#F1EFE8;border:none;border-radius:10px;width:38px;height:38px;font-size:20px;cursor:pointer;color:#5F5E5A}
+.detail-sub{font-size:14px;color:#73726C;margin-bottom:18px}
+.detail-status-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#E5E3DC;border-radius:12px;overflow:hidden;margin-bottom:16px}
+.detail-cell{background:#fff;padding:14px 16px}
+.detail-cell.full{grid-column:1/-1}
+.detail-cell-label{font-size:11px;color:#73726C;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;font-weight:600}
+.detail-cell-value{font-size:15px;color:#1a1a1a;word-break:break-word}
+.detail-cell-value a{color:#3B6BE0;text-decoration:none;font-weight:500}
+.detail-remarks{background:#FBFAF7;border:1px solid #E5E3DC;border-radius:12px;padding:16px;font-size:15px;color:#1a1a1a;line-height:1.5;white-space:pre-wrap}
+.detail-flag{background:#FBD5D8;color:#9E1F2A;border:1px solid #E63946;border-radius:10px;padding:12px 14px;font-size:14px;margin-bottom:16px;font-weight:500}
+.toast{position:fixed;top:100px;left:50%;transform:translateX(-50%);padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:600;display:none;box-shadow:0 6px 20px rgba(0,0,0,0.25)}
+.toast.success{background:#D4F5DE;color:#1B7A3E;border:1px solid #7ECC96}
+.toast.error{background:#FBD5D8;color:#9E1F2A}
 
-/* EMPTY */
-.empty{padding:40px;text-align:center;color:#9C9A92;font-size:13px}
-
-/* TABS */
-.tabs{display:flex;gap:0;border-bottom:0.5px solid #E5E3DC;padding:0 18px;background:#fff}
-.tab{padding:10px 16px;font-size:13px;color:#73726C;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all 0.15s}
-.tab.active{color:#0F6E56;border-bottom-color:#0F6E56;font-weight:500}
-
-/* RESPONSIVE */
-@media(max-width:1200px){.kpi-grid,.today-row{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:900px){.kpi-grid,.today-row{grid-template-columns:repeat(2,1fr)}.two-col,.three-col,.vtype-grid{grid-template-columns:1fr}.main{padding:16px}}
-@media(max-width:600px){.kpi-grid,.today-row{grid-template-columns:repeat(2,1fr)}.filter-bar{gap:10px}}
+@media(max-width:1100px){.side-row{grid-template-columns:1fr}.kpi-6{grid-template-columns:repeat(3,1fr)}.vtc-row,.utr,.stat-boxes{grid-template-columns:1fr}.stat-num{font-size:42px}.utr-num{font-size:52px}.kpi-cell-num{font-size:38px}}
+@media(max-width:700px){.hero-title{font-size:24px}.big-card-title{font-size:22px}.kpi-6{grid-template-columns:repeat(2,1fr)}.stat-inner.four,.stat-inner.three{grid-template-columns:repeat(2,1fr)}.main{padding:14px}.big-card{padding:20px}}
 </style>
 </head>
 <body>
 
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="loading-text">Loading dashboard...</div>
-</div>
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div style="font-size:14px;color:#73726C">Loading dashboard…</div></div>
+<div class="toast" id="toast"></div>
 
-<div class="header">
-  <div class="header-left">
-    <div class="logo">🏪</div>
-    <h1>Party Onboarding</h1>
+<div class="hero">
+  <div class="hero-top">
+    <div class="hero-brand">
+      <div class="hero-logo">
+        <div class="hero-logo-brand">LDMC</div>
+        <div class="hero-logo-tag">Data Intelligence</div>
+      </div>
+      <div>
+        <div class="hero-title-block">
+          <div class="hero-title">Party Onboarding Project</div>
+          <a class="tracker-pill" href="#" onclick="switchView('tracker');return false" id="trackerTabBtn">Town Onboarding Tracker</a>
+        </div>
+        <div class="nav-row">
+          <a class="nav-btn active" href="#" onclick="switchView('main');return false" id="navMain">Main dashboard</a>
+          <a class="nav-btn" href="#" onclick="switchView('parties');return false" id="navParties">Party list</a>
+          <a class="nav-btn" href="form.html">+ New visit</a>
+          <a class="nav-btn" href="admin.html">⚙ Admin</a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <button class="hero-btn white" onclick="exportExcel()">Download Excel Dump</button>
+      <button class="hero-btn green" onclick="generateDailyReport()">Generate Daily Report</button>
+    </div>
   </div>
-  <div class="header-right">
-    <span class="sync-dot" id="syncDot" title="Last synced"></span>
-    <button class="header-btn" onclick="loadData()">↻ Refresh</button>
-    <button class="header-btn" onclick="exportExcel()">↓ Export Excel</button>
-    <a class="header-btn" href="form.html">+ New visit</a>
-    <a class="header-btn" href="admin.html">⚙ Admin</a>
+  <div class="state-row">
+    <span class="state-lbl">Select State:</span>
+    <div id="stateFilters" style="display:flex;gap:10px;flex-wrap:wrap"><button class="state-pill active" onclick="setStateFilter('ALL',this)">ALL</button></div>
   </div>
 </div>
 
 <div class="main">
 
-  <!-- FILTER BAR -->
-  <div class="filter-bar">
-    <label>State</label>
-    <div class="filter-group" id="stateFilters">
-      <button class="filter-chip active" onclick="setStateFilter('ALL',this)">All states</button>
-    </div>
-    <div class="filter-divider"></div>
-    <label>Village type</label>
-    <div class="filter-group">
-      <button class="filter-chip active" onclick="setVtypeFilter('ALL',this)">All</button>
-      <button class="filter-chip" onclick="setVtypeFilter('DHQ',this)">DHQ</button>
-      <button class="filter-chip" onclick="setVtypeFilter('P1',this)">P1</button>
-      <button class="filter-chip" onclick="setVtypeFilter('P2',this)">P2</button>
-    </div>
-    <div class="filter-divider"></div>
-    <div class="date-filter">
-      <label>From</label>
-      <input type="date" id="dateFrom" onchange="applyFilters()">
-      <label>To</label>
-      <input type="date" id="dateTo" onchange="applyFilters()">
-    </div>
-    <span class="last-updated" id="lastUpdated">—</span>
+  <div class="sub-filter">
+    <span class="sub-lbl">Village type</span>
+    <div id="vtypeFilters" style="display:flex;gap:6px;flex-wrap:wrap"><button class="vpill active" onclick="setVtypeFilter('ALL',this)">All</button></div>
+    <span class="sub-lbl">Date</span>
+    <input type="date" class="date-inp" id="dateFrom" onchange="applyFilters()">
+    <span style="color:#9C9A92;font-size:12px">to</span>
+    <input type="date" class="date-inp" id="dateTo" onchange="applyFilters()">
+    <span class="last-upd" id="lastUpdated">—</span>
   </div>
 
-  <!-- OVERALL KPIs -->
-  <div class="section-title">Overall</div>
-  <div class="kpi-grid" id="kpiGrid">
-    <div class="kpi-card teal"><div class="kpi-label">Total visited</div><div class="kpi-value" id="kpi-visited">—</div><div class="kpi-delta" id="kpi-visited-d"></div></div>
-    <div class="kpi-card green"><div class="kpi-label">Onboarded</div><div class="kpi-value green" id="kpi-onboarded">—</div><div class="kpi-delta" id="kpi-onboarded-d"></div></div>
-    <div class="kpi-card amber"><div class="kpi-label">Open</div><div class="kpi-value amber" id="kpi-open">—</div><div class="kpi-delta" id="kpi-open-d"></div></div>
-    <div class="kpi-card gray"><div class="kpi-label">Closed</div><div class="kpi-value gray" id="kpi-closed">—</div><div class="kpi-delta" id="kpi-closed-d"></div></div>
-    <div class="kpi-card red"><div class="kpi-label">Not avail.</div><div class="kpi-value red" id="kpi-doesnt">—</div><div class="kpi-delta" id="kpi-doesnt-d"></div></div>
-    <div class="kpi-card blue"><div class="kpi-label">Conversion %</div><div class="kpi-value blue" id="kpi-conv">—</div><div class="kpi-delta" id="kpi-conv-d"></div></div>
-  </div>
+  <div class="view" id="view-main">
 
-  <!-- COVERAGE ROW -->
-  <div class="section-title">List coverage</div>
-  <div class="kpi-grid" id="coverageGrid">
-    <div class="kpi-card teal"><div class="kpi-label">Assigned parties</div><div class="kpi-value" id="kpi-assigned">—</div><div class="kpi-delta">total on list</div></div>
-    <div class="kpi-card green"><div class="kpi-label">Validated</div><div class="kpi-value green" id="kpi-validated">—</div><div class="kpi-delta" id="kpi-validated-d"></div></div>
-    <div class="kpi-card amber"><div class="kpi-label">Pending</div><div class="kpi-value amber" id="kpi-pending">—</div><div class="kpi-delta">not yet visited</div></div>
-    <div class="kpi-card blue"><div class="kpi-label">Coverage %</div><div class="kpi-value blue" id="kpi-coverage">—</div><div class="kpi-delta">validated ÷ assigned</div></div>
-    <div class="kpi-card purple"><div class="kpi-label">New parties</div><div class="kpi-value" style="color:#534AB7" id="kpi-new">—</div><div class="kpi-delta">found off-list</div></div>
-    <div class="kpi-card gray"><div class="kpi-label">Salesmen</div><div class="kpi-value gray" id="kpi-salesmen">—</div><div class="kpi-delta">submitted</div></div>
-  </div>
+    <!-- SELECTED STATE DATABASE -->
+    <div class="big-card">
+      <div class="big-card-title">Selected State Database</div>
 
-  <!-- TODAY KPIs -->
-  <div class="section-title">Today</div>
-  <div class="today-row">
-    <div class="today-card"><div class="today-label">Visited</div><div class="today-value" id="today-visited">—</div></div>
-    <div class="today-card"><div class="today-label">Onboarded</div><div class="today-value" style="color:#0F6E56" id="today-onboarded">—</div></div>
-    <div class="today-card"><div class="today-label">Open</div><div class="today-value" style="color:#BA7517" id="today-open">—</div></div>
-    <div class="today-card"><div class="today-label">Closed</div><div class="today-value" style="color:#5F5E5A" id="today-closed">—</div></div>
-    <div class="today-card"><div class="today-label">Doesn't exist</div><div class="today-value" style="color:#A32D2D" id="today-doesnt">—</div></div>
-    <div class="today-card"><div class="today-label">Conversion %</div><div class="today-value" style="color:#185FA5" id="today-conv">—</div></div>
-  </div>
-
-  <!-- STATUS BREAKDOWN + PARTY TYPE SPLIT -->
-  <div class="two-col">
-    <div class="card">
-      <div class="card-header"><span class="card-title">Status breakdown</span><span class="card-sub" id="breakdownTotal"></span></div>
-      <div class="status-bar-wrap">
-        <div class="status-bar-track" id="statusBarTrack"></div>
-        <div class="status-legend" id="statusLegend"></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">New vs Existing parties</span></div>
-      <div class="status-bar-wrap">
-        <div class="status-bar-track" id="partyTypeBar"></div>
-        <div class="status-legend" id="partyTypeLegend"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- VILLAGE TYPE BREAKDOWN -->
-  <div class="section-title">Village type breakdown</div>
-  <div class="vtype-grid" id="vtypeGrid"></div>
-
-  <!-- MAP -->
-  <div class="card map-card">
-    <div class="card-header">
-      <span class="card-title">Visit locations map</span>
-      <span class="card-sub" id="mapCount"></span>
-    </div>
-    <div id="mapContainer"></div>
-    <div class="map-legend">
-      <div class="map-legend-item"><div class="map-dot" style="background:#1D9E75"></div>Onboarded</div>
-      <div class="map-legend-item"><div class="map-dot" style="background:#EF9F27"></div>Open</div>
-      <div class="map-legend-item"><div class="map-dot" style="background:#888780"></div>Closed</div>
-      <div class="map-legend-item"><div class="map-dot" style="background:#E24B4A"></div>Doesn't exist</div>
-    </div>
-  </div>
-
-  <!-- DISTRICT + SALES TEAM -->
-  <div class="two-col">
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">District summary</span>
-        <div class="tabs" style="border:none;padding:0;background:transparent">
-          <span class="tab active" onclick="switchDistrictTab('overall',this)">Overall</span>
-          <span class="tab" onclick="switchDistrictTab('today',this)">Today</span>
+      <div class="stat-boxes">
+        <div class="stat-box">
+          <div class="stat-box-title">DISTRICT COVERAGE</div>
+          <div class="stat-inner four">
+            <div class="stat-cell purple"><div class="stat-num purple" id="cov-requested">—</div><div class="stat-lbl">Requested</div></div>
+            <div class="stat-cell blue"><div class="stat-num blue" id="cov-received">—</div><div class="stat-lbl">Received</div></div>
+            <div class="stat-cell orange"><div class="stat-num orange" id="cov-pending">—</div><div class="stat-lbl">Pending</div></div>
+            <div class="stat-cell green"><div class="stat-num green" id="cov-started">—</div><div class="stat-lbl">Audit Started</div></div>
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-title">UNIQUE TEHSILS</div>
+          <div class="stat-inner three">
+            <div class="stat-cell red"><div class="stat-num red" id="teh-total">—</div><div class="stat-lbl">Total</div></div>
+            <div class="stat-cell orange"><div class="stat-num orange" id="teh-started">—</div><div class="stat-lbl">Audit Started</div></div>
+            <div class="stat-cell green"><div class="stat-num green" id="teh-completed">—</div><div class="stat-lbl">Audit Completed</div></div>
+          </div>
         </div>
       </div>
-      <div class="card-body">
-        <table class="data-table" id="districtTable">
-          <thead><tr><th>District</th><th class="num">Visited</th><th class="num">Onboarded</th><th class="num">Conv %</th></tr></thead>
-          <tbody id="districtBody"></tbody>
+
+      <div class="section-lbl">UNIQUE TOWNS</div>
+      <div class="utr">
+        <div class="utr-card"><div class="utr-num" id="tw-total">—</div><div class="utr-lbl">Total</div></div>
+        <div class="utr-card"><div class="utr-num" id="tw-started">—</div><div class="utr-lbl">Audit Started</div></div>
+        <div class="utr-card"><div class="utr-num" id="tw-completed">—</div><div class="utr-lbl">Audit Completed</div></div>
+      </div>
+
+      <div class="vtc-row" id="vtcRow"></div>
+    </div>
+
+    <!-- HIERARCHY TABLE -->
+    <div class="section-card">
+      <div class="section-card-hdr">
+        <span class="section-card-title">District → Tehsil → Town Hierarchy</span>
+        <input type="text" placeholder="Search town…" id="hierarchySearch" class="hier-search" oninput="renderHierarchy()">
+      </div>
+      <div style="overflow-x:auto;max-height:440px;overflow-y:auto">
+        <table class="tbl" id="hierarchyTable" style="min-width:820px">
+          <thead><tr><th>District</th><th>Tehsil</th><th>Town</th><th>Type</th><th>Visited</th><th>Onboarded</th><th>Open</th><th>Conv %</th></tr></thead>
+          <tbody id="hierarchyBody"></tbody>
         </table>
       </div>
     </div>
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">Sales team summary</span>
-        <div class="tabs" style="border:none;padding:0;background:transparent">
-          <span class="tab active" onclick="switchTeamTab('overall',this)">Overall</span>
-          <span class="tab" onclick="switchTeamTab('today',this)">Today</span>
+
+    <!-- DATEWISE TRACKER -->
+    <div class="chart-wrap">
+      <div class="chart-title">Datewise Tracker</div>
+      <canvas id="dwChart"></canvas>
+    </div>
+
+    <!-- OVERALL + TODAY KPI -->
+    <div class="side-row">
+      <div class="side-card">
+        <div class="side-title">Overall KPI</div>
+        <div class="kpi-6">
+          <div class="kpi-cell green"><div class="kpi-cell-num" id="ok-visited">—</div><div class="kpi-cell-lbl">Total Party Visited</div></div>
+          <div class="kpi-cell orange"><div class="kpi-cell-num" id="ok-open">—</div><div class="kpi-cell-lbl">Open</div></div>
+          <div class="kpi-cell purple"><div class="kpi-cell-num" id="ok-onboarded">—</div><div class="kpi-cell-lbl">Onboarded</div></div>
+          <div class="kpi-cell blue"><div class="kpi-cell-num" id="ok-conv">—</div><div class="kpi-cell-lbl">Conversion %</div></div>
+          <div class="kpi-cell red"><div class="kpi-cell-num" id="ok-closed">—</div><div class="kpi-cell-lbl">Closed</div></div>
+          <div class="kpi-cell gray"><div class="kpi-cell-num" id="ok-doesnt">—</div><div class="kpi-cell-lbl">Doesn't Exist</div></div>
         </div>
       </div>
-      <div class="card-body">
-        <table class="data-table" id="teamTable">
-          <thead><tr><th>Team</th><th class="num">Visited</th><th class="num">Onboarded</th><th class="num">Conv %</th></tr></thead>
-          <tbody id="teamBody"></tbody>
+      <div class="side-card today">
+        <div class="side-title">Today's KPI</div>
+        <div class="kpi-6">
+          <div class="kpi-cell green"><div class="kpi-cell-num" id="tk-visited">—</div><div class="kpi-cell-lbl">Total Party Visited</div></div>
+          <div class="kpi-cell orange"><div class="kpi-cell-num" id="tk-open">—</div><div class="kpi-cell-lbl">Open</div></div>
+          <div class="kpi-cell purple"><div class="kpi-cell-num" id="tk-onboarded">—</div><div class="kpi-cell-lbl">Onboarded</div></div>
+          <div class="kpi-cell blue"><div class="kpi-cell-num" id="tk-conv">—</div><div class="kpi-cell-lbl">Conversion %</div></div>
+          <div class="kpi-cell red"><div class="kpi-cell-num" id="tk-closed">—</div><div class="kpi-cell-lbl">Closed</div></div>
+          <div class="kpi-cell gray"><div class="kpi-cell-num" id="tk-doesnt">—</div><div class="kpi-cell-lbl">Doesn't Exist</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI SPLIT (Existing vs New) -->
+    <div class="side-row">
+      <div class="side-card">
+        <div class="side-title">Overall KPI Split: Existing vs New</div>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Party Type</th><th>Total Party Visited</th><th>Open</th><th>Onboarded</th><th>Conversion %</th><th>Closed</th><th>Doesn't Exist</th></tr></thead>
+          <tbody id="okSplitBody"></tbody>
+        </table></div>
+      </div>
+      <div class="side-card today">
+        <div class="side-title">Today's KPI Split: Existing vs New</div>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Party Type</th><th>Total Party Visited</th><th>Open</th><th>Onboarded</th><th>Conversion %</th><th>Closed</th><th>Doesn't Exist</th></tr></thead>
+          <tbody id="tkSplitBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- SALES TEAM -->
+    <div class="side-row">
+      <div class="side-card">
+        <div class="side-title">Overall Sales Team Summary</div>
+        <div class="tbl-wrap side-scroll"><table class="tbl">
+          <thead><tr><th>Sales Team</th><th>Party Type</th><th>Visited</th><th>Open</th><th>Onboarded</th><th>Conv %</th><th>Closed</th><th>N/A</th></tr></thead>
+          <tbody id="okTeamBody"></tbody>
+        </table></div>
+      </div>
+      <div class="side-card today">
+        <div class="side-title">Today's Sales Team Summary</div>
+        <div class="tbl-wrap side-scroll"><table class="tbl">
+          <thead><tr><th>Sales Team</th><th>Party Type</th><th>Visited</th><th>Open</th><th>Onboarded</th><th>Conv %</th><th>Closed</th><th>N/A</th></tr></thead>
+          <tbody id="tkTeamBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- DISTRICT -->
+    <div class="side-row">
+      <div class="side-card">
+        <div class="side-title">Overall District Summary</div>
+        <div class="tbl-wrap side-scroll"><table class="tbl">
+          <thead><tr><th>District</th><th>Visited</th><th>Open</th><th>Onboarded</th><th>Conv %</th><th>Closed</th><th>N/A</th></tr></thead>
+          <tbody id="okDistBody"></tbody>
+        </table></div>
+      </div>
+      <div class="side-card today">
+        <div class="side-title">Today's District Summary</div>
+        <div class="tbl-wrap side-scroll"><table class="tbl">
+          <thead><tr><th>District</th><th>Visited</th><th>Open</th><th>Onboarded</th><th>Conv %</th><th>Closed</th><th>N/A</th></tr></thead>
+          <tbody id="tkDistBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div class="section-card">
+      <div class="section-card-hdr"><span class="section-card-title">Visited Location Map</span><span class="section-card-sub" id="mapCount"></span></div>
+      <div id="mapContainer"></div>
+      <div class="map-legend">
+        <div class="map-legend-item"><div class="map-dot" style="background:#25A660"></div>Onboarded</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:#F98E30"></div>Open</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:#888780"></div>Closed</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:#E63946"></div>Doesn't Exist</div>
+        <div class="map-legend-item" style="margin-left:auto"><div class="map-dot" style="background:#F98E30;border:2px solid #E63946"></div>Flagged far</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRACKER VIEW -->
+  <div class="view" id="view-tracker" style="display:none">
+    <div class="section-card">
+      <div class="section-card-hdr"><span class="section-card-title">Town Onboarding Tracker</span><span class="section-card-sub" id="ttSummary"></span></div>
+      <div style="padding:20px 24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px" id="ttSummaryGrid"></div>
+      <div style="padding:14px 24px;background:#FBFAF7;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid #F1EFE8;border-bottom:1px solid #F1EFE8">
+        <span class="sub-lbl">Filter</span>
+        <div class="vpill active" onclick="setTtFilter('all',this)" id="tt-all">All 0</div>
+        <div class="vpill" onclick="setTtFilter('notVisited',this)" id="tt-nv">Not visited 0</div>
+        <div class="vpill" onclick="setTtFilter('onboarded',this)" id="tt-on">Onboarded ≥1 0</div>
+        <div class="vpill" onclick="setTtFilter('openNotOnboarded',this)" id="tt-op">Open, no onb. 0</div>
+        <div class="vpill" onclick="setTtFilter('visitedNoOpen',this)" id="tt-vn">Visited, no open 0</div>
+        <button class="vpill" onclick="toggleTtSort()" id="ttSortBtn" style="margin-left:auto">Sort: Progress ↓</button>
+      </div>
+      <div style="max-height:640px;overflow-y:auto" id="townList"></div>
+      <div class="count-bar" id="townCountBar"></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hdr"><span class="section-card-title">Town Combo Status Table</span></div>
+      <div style="overflow-x:auto;max-height:520px;overflow-y:auto">
+        <table class="tbl" id="comboTable" style="min-width:900px">
+          <thead><tr><th>District</th><th>Tehsil</th><th>Town</th><th>Type</th><th>Tracker Status</th><th>In DB</th><th>Visited</th><th>Open</th><th>Onboarded</th><th>Closed</th></tr></thead>
+          <tbody id="comboBody"></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- DISTRICT → TEHSIL → TOWN HIERARCHY -->
-  <div class="card" style="margin-bottom:20px">
-    <div class="card-header">
-      <span class="card-title">District → Tehsil → Town hierarchy</span>
-      <input type="text" placeholder="Search town..." id="hierarchySearch" style="border:0.5px solid #E5E3DC;border-radius:6px;padding:5px 10px;font-size:12px;font-family:inherit;outline:none;width:180px" oninput="renderHierarchy()">
-    </div>
-    <div class="card-body">
-      <table class="data-table" id="hierarchyTable">
-        <thead><tr><th>District</th><th>Tehsil</th><th>Town</th><th>Type</th><th class="num">Visited</th><th class="num">Onboarded</th><th class="num">Open</th><th class="num">Conv %</th></tr></thead>
-        <tbody id="hierarchyBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- EXISTING VS NEW SPLIT -->
-  <div class="two-col">
-    <div class="card">
-      <div class="card-header"><span class="card-title">Existing vs New — Overall</span></div>
-      <div class="card-body">
-        <table class="data-table">
-          <thead><tr><th>Party type</th><th class="num">Visited</th><th class="num">Open</th><th class="num">Onboarded</th><th class="num">Conv %</th></tr></thead>
-          <tbody id="existNewOverallBody"></tbody>
+  <!-- PARTY LIST VIEW -->
+  <div class="view" id="view-parties" style="display:none">
+    <div class="section-card">
+      <div class="section-card-hdr">
+        <span class="section-card-title">Party List with Photos</span>
+        <button class="hero-btn white" style="padding:8px 20px;font-size:13px;background:#3B6BE0;color:#fff;border:none" onclick="exportExcel()">↓ Excel</button>
+      </div>
+      <div class="party-filters">
+        <input class="party-search" type="text" placeholder="Search party, owner, phone…" id="partySearch" oninput="renderPartyList()">
+        <select class="party-select" id="partyStatusFilter" onchange="renderPartyList()">
+          <option value="">All statuses</option><option>Onboarded</option><option>Open</option><option>Closed</option><option>Not Available</option><option>Doesn't Exist</option>
+        </select>
+        <select class="party-select" id="partyTypeFilter" onchange="renderPartyList()">
+          <option value="">All types</option><option>New</option><option>Existing</option>
+        </select>
+        <select class="party-select" id="partyFlagFilter" onchange="renderPartyList()">
+          <option value="">All locations</option><option value="far">⚠ Flagged only</option><option value="ok">Within range only</option>
+        </select>
+      </div>
+      <div class="party-table-wrap">
+        <table class="party-table">
+          <thead><tr><th>Photo</th><th>Party</th><th>Type</th><th>Status</th><th>Owner</th><th>Phone</th><th>Town</th><th>District</th><th>Village</th><th>Salesman</th><th>Distance</th><th>Time</th><th>Remarks</th></tr></thead>
+          <tbody id="partyTableBody"></tbody>
         </table>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">Existing vs New — Today</span></div>
-      <div class="card-body">
-        <table class="data-table">
-          <thead><tr><th>Party type</th><th class="num">Visited</th><th class="num">Open</th><th class="num">Onboarded</th><th class="num">Conv %</th></tr></thead>
-          <tbody id="existNewTodayBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- TOWN ONBOARDING TRACKER -->
-  <div class="section-title">Town onboarding tracker</div>
-  <div class="vtype-grid" id="townTrackerGrid"></div>
-
-  <!-- TOWN COMBO STATUS TABLE -->
-  <div class="card" style="margin-bottom:20px">
-    <div class="card-header">
-      <span class="card-title">Town combo status table</span>
-      <input type="text" placeholder="Search town..." id="comboSearch" style="border:0.5px solid #E5E3DC;border-radius:6px;padding:5px 10px;font-size:12px;font-family:inherit;outline:none;width:180px" oninput="renderComboTable()">
-    </div>
-    <div class="card-body" style="overflow-x:auto">
-      <table class="data-table" id="comboTable">
-        <thead><tr>
-          <th>District</th><th>Tehsil</th><th>Town</th><th>Type</th><th>Tracker status</th>
-          <th class="num">In DB</th><th class="num">Visited</th><th class="num">Open</th><th class="num">Onboarded</th><th class="num">Closed</th>
-        </tr></thead>
-        <tbody id="comboBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- PARTY LIST -->
-  <div class="card" style="margin-bottom:20px">
-    <div class="card-header">
-      <span class="card-title">Party list</span>
-      <button class="export-btn" onclick="exportExcel()">↓ Excel</button>
-    </div>
-    <div class="party-filters">
-      <input class="party-search" type="text" placeholder="Search party name, owner, phone..." id="partySearch" oninput="renderPartyList()">
-      <select class="party-select" id="partyStatusFilter" onchange="renderPartyList()">
-        <option value="">All statuses</option>
-        <option>Onboarded</option>
-        <option>Open</option>
-        <option>Closed</option>
-        <option>Doesn't Exist</option>
-      </select>
-      <select class="party-select" id="partyTypeFilter" onchange="renderPartyList()">
-        <option value="">All types</option>
-        <option>New</option>
-        <option>Existing</option>
-      </select>
-      <select class="party-select" id="partyFlagFilter" onchange="renderPartyList()">
-        <option value="">All locations</option>
-        <option value="far">⚠ Flagged far only</option>
-        <option value="ok">Within range only</option>
-      </select>
-    </div>
-    <div id="partyListWrap">
-    <div class="party-table-wrap">
-      <table class="party-table">
-        <thead><tr>
-          <th>Photo</th><th>Party</th><th>Type</th><th>Status</th><th>Owner</th><th>Phone</th>
-          <th>Town</th><th>District</th><th>Village</th><th>Salesman</th><th>Distance</th><th>Time</th><th>Remarks</th>
-        </tr></thead>
-        <tbody id="partyTableBody"></tbody>
-      </table>
-    </div>
-    <div class="party-count-bar" id="partyCountBar"></div>
+      <div class="count-bar" id="partyCountBar"></div>
     </div>
   </div>
 
 </div>
 
-<!-- STORE DETAIL MODAL -->
 <div class="detail-overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
   <div class="detail-modal" id="detailModal"></div>
 </div>
@@ -452,568 +467,229 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-const SUPABASE_URL = 'https://tzejrlkclshjofqgcsrw.supabase.co'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWpybGtjbHNoam9mcWdjc3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDgwMjAsImV4cCI6MjA5NjU4NDAyMH0.vxlWh1-ptyTKJCaaluPFX1hJ1UlqFnumBD075Nfh100'
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+const SUPABASE_URL='https://tzejrlkclshjofqgcsrw.supabase.co'
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWpybGtjbHNoam9mcWdjc3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDgwMjAsImV4cCI6MjA5NjU4NDAyMH0.vxlWh1-ptyTKJCaaluPFX1hJ1UlqFnumBD075Nfh100'
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
+let allData=[],filteredData=[],assignedParties=[],cidMaster=[]
+let activeState='ALL',activeVtype='ALL'
+let ttFilter='all',ttSortBy='progress'
+let map=null,markerLayer=null,dwChart=null
+const today=new Date().toISOString().split('T')[0]
 
-let allData = []
-let filteredData = []
-let assignedParties = []
-let activeState = 'ALL'
-let activeVtype = 'ALL'
-let districtTab = 'overall'
-let teamTab = 'overall'
-let map = null
-let markerLayer = null
+function detectVtypes(){return[...new Set([...assignedParties.map(p=>p.village_type),...allData.map(r=>r.village_type)].filter(Boolean))].sort()}
+function vtCls(v){return(v||'').toLowerCase()}
 
-const today = new Date().toISOString().split('T')[0]
-
-// === LOAD DATA ===
-async function loadData() {
-  document.getElementById('syncDot').classList.add('syncing')
-  const [subsRes, partiesRes] = await Promise.all([
-    sb.from('submissions').select('*').order('submission_time', { ascending: false }),
-    sb.from('assigned_parties').select('party_id,cid,village_type,state,district,town')
-  ])
-  if (subsRes.error) { console.error(subsRes.error); return }
-  allData = subsRes.data || []
-  assignedParties = partiesRes.data || []
-  document.getElementById('syncDot').classList.remove('syncing')
-  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString()
-  buildStateFilters()
-  applyFilters()
-  document.getElementById('loadingOverlay').style.display = 'none'
+async function loadData(){
+  const [subs,parties,cids]=await Promise.all([sb.from('submissions').select('*').order('submission_time',{ascending:false}),sb.from('assigned_parties').select('*'),sb.from('cid_master').select('*')])
+  allData=subs.data||[];assignedParties=parties.data||[];cidMaster=cids.data||[]
+  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString()
+  buildFilters();applyFilters()
+  document.getElementById('loadingOverlay').style.display='none'
 }
 
-function renderCoverage() {
-  // Filter assigned parties by active state
-  let assigned = assignedParties
-  if (activeState !== 'ALL') assigned = assigned.filter(p => p.state === activeState)
-  if (activeVtype !== 'ALL') assigned = assigned.filter(p => p.village_type === activeVtype)
-  const totalAssigned = assigned.length
+function buildFilters(){
+  const states=[...new Set([...cidMaster.map(c=>c.state),...allData.map(r=>r.state)].filter(Boolean))].sort()
+  const sf=document.getElementById('stateFilters')
+  sf.innerHTML='<button class="state-pill active" onclick="setStateFilter(\'ALL\',this)">ALL</button>'
+  states.forEach(s=>{const b=document.createElement('button');b.className='state-pill';b.textContent=s;b.onclick=function(){setStateFilter(s,this)};sf.appendChild(b)})
+  const vf=document.getElementById('vtypeFilters')
+  vf.innerHTML='<button class="vpill active" onclick="setVtypeFilter(\'ALL\',this)">All</button>'
+  detectVtypes().forEach(v=>{const b=document.createElement('button');b.className='vpill';b.textContent=v;b.onclick=function(){setVtypeFilter(v,this)};vf.appendChild(b)})
+}
+function setStateFilter(v,el){activeState=v;document.querySelectorAll('.state-pill').forEach(c=>c.classList.remove('active'));el.classList.add('active');applyFilters()}
+function setVtypeFilter(v,el){activeVtype=v;document.querySelectorAll('#vtypeFilters .vpill').forEach(c=>c.classList.remove('active'));el.classList.add('active');applyFilters()}
+function applyFilters(){const from=document.getElementById('dateFrom').value,to=document.getElementById('dateTo').value;filteredData=allData.filter(r=>{if(activeState!=='ALL'&&r.state!==activeState)return false;if(activeVtype!=='ALL'&&r.village_type!==activeVtype)return false;if(from&&r.submission_time<from)return false;if(to&&r.submission_time>to+'T23:59:59')return false;return true});renderAll()}
 
-  // Validated = assigned parties that have a submission
-  const validatedIds = new Set(filteredData.filter(r => r.party_id).map(r => r.party_id))
-  const validated = assigned.filter(p => validatedIds.has(p.party_id)).length
-  const pending = totalAssigned - validated
-  const coverage = totalAssigned > 0 ? ((validated/totalAssigned)*100).toFixed(1) : '0.0'
-  const newParties = filteredData.filter(r => r.source === 'new').length
-  const salesmen = new Set(filteredData.map(r => r.salesman).filter(Boolean)).size
-  const flagged = filteredData.filter(r => r.location_flag === 'far').length
-
-  document.getElementById('kpi-assigned').textContent = totalAssigned.toLocaleString()
-  document.getElementById('kpi-validated').textContent = validated.toLocaleString()
-  document.getElementById('kpi-validated-d').textContent = coverage + '% done'
-  document.getElementById('kpi-pending').textContent = pending.toLocaleString()
-  document.getElementById('kpi-coverage').textContent = coverage + '%'
-  document.getElementById('kpi-new').textContent = newParties.toLocaleString()
-  const smEl = document.getElementById('kpi-salesmen')
-  smEl.textContent = salesmen
-  // show flagged count as a delta under salesmen
-  const smDelta = smEl.parentElement.querySelector('.kpi-delta')
-  if (smDelta) smDelta.innerHTML = flagged > 0 ? `<span style="color:#A32D2D">⚠ ${flagged} flagged far</span>` : 'submitted'
+function switchView(v){
+  document.querySelectorAll('.view').forEach(x=>x.style.display='none')
+  document.getElementById('view-'+v).style.display='block'
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'))
+  document.getElementById('trackerTabBtn').classList.remove('active')
+  if(v==='main')document.getElementById('navMain').classList.add('active')
+  else if(v==='parties')document.getElementById('navParties').classList.add('active')
+  else if(v==='tracker')document.getElementById('trackerTabBtn').classList.add('active')
+  if(v==='main'&&map)setTimeout(()=>map.invalidateSize(),100)
+  window.scrollTo({top:0,behavior:'smooth'})
 }
 
-// === STATE FILTERS ===
-function buildStateFilters() {
-  const states = [...new Set(allData.map(r => r.state).filter(Boolean))].sort()
-  const wrap = document.getElementById('stateFilters')
-  wrap.innerHTML = '<button class="filter-chip active" onclick="setStateFilter(\'ALL\',this)">All states</button>'
-  states.forEach(s => {
-    const b = document.createElement('button')
-    b.className = 'filter-chip'
-    b.textContent = s
-    b.onclick = function(){ setStateFilter(s, this) }
-    wrap.appendChild(b)
-  })
-}
+function kpiCalc(rows){const v=rows.length;const on=rows.filter(r=>r.status==='Onboarded').length;const op=rows.filter(r=>r.status==='Open').length;const cl=rows.filter(r=>r.status==='Closed').length;const dn=rows.filter(r=>r.status==="Doesn't Exist"||r.status==='Not Available').length;const cv=v>0?((on/v)*100).toFixed(1):'0.0';return{visited:v,onboarded:on,open:op,closed:cl,doesnt:dn,conv:cv}}
 
-function setStateFilter(val, el) {
-  activeState = val
-  document.querySelectorAll('#stateFilters .filter-chip').forEach(c => c.classList.remove('active'))
-  el.classList.add('active')
-  applyFilters()
-}
-
-function setVtypeFilter(val, el) {
-  activeVtype = val
-  document.querySelectorAll('.filter-group:nth-child(5) .filter-chip').forEach(c => c.classList.remove('active'))
-  el.classList.add('active')
-  applyFilters()
-}
-
-// === APPLY FILTERS ===
-function applyFilters() {
-  const from = document.getElementById('dateFrom').value
-  const to = document.getElementById('dateTo').value
-  filteredData = allData.filter(r => {
-    if (activeState !== 'ALL' && r.state !== activeState) return false
-    if (activeVtype !== 'ALL' && r.village_type !== activeVtype) return false
-    if (from && r.submission_time < from) return false
-    if (to && r.submission_time > to + 'T23:59:59') return false
-    return true
-  })
-  renderAll()
-}
-
-// === RENDER ALL ===
-function renderAll() {
-  renderKPIs()
-  renderCoverage()
-  renderTodayKPIs()
-  renderExistNew()
-  renderTownTracker()
-  renderComboTable()
-  renderStatusBreakdown()
-  renderPartyTypeBreakdown()
-  renderVtypeGrid()
+function renderAll(){
+  renderCoverage();renderCounters();renderVtc()
+  renderHierarchy();renderDwChart()
+  renderKPIs('ok',filteredData);renderKPIs('tk',filteredData.filter(r=>r.submission_time?.startsWith(today)))
+  renderSplit('okSplitBody',filteredData);renderSplit('tkSplitBody',filteredData.filter(r=>r.submission_time?.startsWith(today)))
+  renderTeamTable('okTeamBody',filteredData);renderTeamTable('tkTeamBody',filteredData.filter(r=>r.submission_time?.startsWith(today)))
+  renderDistrictTable('okDistBody',filteredData);renderDistrictTable('tkDistBody',filteredData.filter(r=>r.submission_time?.startsWith(today)))
   renderMap()
-  renderDistrictTable()
-  renderTeamTable()
-  renderHierarchy()
+  renderTracker();renderTownList();renderCombo()
   renderPartyList()
 }
 
-// === KPIs ===
-function kpiCalc(rows) {
-  const visited = rows.length
-  const onboarded = rows.filter(r => r.status === 'Onboarded').length
-  const open = rows.filter(r => r.status === 'Open').length
-  const closed = rows.filter(r => r.status === 'Closed').length
-  const doesnt = rows.filter(r => r.status === "Doesn't Exist").length
-  const conv = visited > 0 ? ((onboarded / visited) * 100).toFixed(1) : '0.0'
-  return { visited, onboarded, open, closed, doesnt, conv }
+function renderCoverage(){
+  const cids=activeState==='ALL'?cidMaster:cidMaster.filter(c=>c.state===activeState)
+  const districts=new Set(cids.map(c=>c.district).filter(Boolean))
+  const audited=new Set(filteredData.map(r=>r.district).filter(Boolean))
+  const started=[...audited].filter(d=>districts.has(d)).length
+  document.getElementById('cov-requested').textContent=districts.size
+  document.getElementById('cov-received').textContent=districts.size
+  document.getElementById('cov-pending').textContent=0
+  document.getElementById('cov-started').textContent=started
+}
+function renderCounters(){
+  const cids=activeState==='ALL'?cidMaster:cidMaster.filter(c=>c.state===activeState)
+  const tehsils=new Set(cids.map(c=>c.tehsil).filter(Boolean))
+  const towns=new Set(cids.map(c=>c.cid))
+  const tehStarted=new Set(filteredData.map(r=>r.tehsil).filter(Boolean))
+  const partiesByTehsil={},partiesByTown={}
+  assignedParties.forEach(p=>{if(activeState!=='ALL'&&p.state!==activeState)return;(partiesByTehsil[p.tehsil]=partiesByTehsil[p.tehsil]||[]).push(p);const k=`${p.state}|${p.district}|${p.town}`;(partiesByTown[k]=partiesByTown[k]||[]).push(p)})
+  const submittedIds=new Set(filteredData.filter(r=>r.party_id).map(r=>r.party_id))
+  let tehC=0;Object.values(partiesByTehsil).forEach(ps=>{if(ps.every(p=>submittedIds.has(p.party_id)))tehC++})
+  const townsStarted=new Set();filteredData.forEach(r=>{if(r.town)townsStarted.add(`${r.state}|${r.district}|${r.town}`)})
+  let tC=0;Object.values(partiesByTown).forEach(ps=>{if(ps.every(p=>submittedIds.has(p.party_id)))tC++})
+  document.getElementById('teh-total').textContent=tehsils.size
+  document.getElementById('teh-started').textContent=[...tehStarted].filter(t=>tehsils.has(t)).length
+  document.getElementById('teh-completed').textContent=tehC
+  document.getElementById('tw-total').textContent=towns.size.toLocaleString()
+  document.getElementById('tw-started').textContent=townsStarted.size.toLocaleString()
+  document.getElementById('tw-completed').textContent=tC.toLocaleString()
 }
 
-function renderKPIs() {
-  const k = kpiCalc(filteredData)
-  document.getElementById('kpi-visited').textContent = k.visited.toLocaleString()
-  document.getElementById('kpi-onboarded').textContent = k.onboarded.toLocaleString()
-  document.getElementById('kpi-open').textContent = k.open.toLocaleString()
-  document.getElementById('kpi-closed').textContent = k.closed.toLocaleString()
-  document.getElementById('kpi-doesnt').textContent = k.doesnt.toLocaleString()
-  document.getElementById('kpi-conv').textContent = k.conv + '%'
-}
-
-function renderTodayKPIs() {
-  const todayData = filteredData.filter(r => r.submission_time && r.submission_time.startsWith(today))
-  const k = kpiCalc(todayData)
-  document.getElementById('today-visited').textContent = k.visited
-  document.getElementById('today-onboarded').textContent = k.onboarded
-  document.getElementById('today-open').textContent = k.open
-  document.getElementById('today-closed').textContent = k.closed
-  document.getElementById('today-doesnt').textContent = k.doesnt
-  document.getElementById('today-conv').textContent = k.conv + '%'
-}
-
-// === STATUS BREAKDOWN ===
-function renderStatusBreakdown() {
-  const k = kpiCalc(filteredData)
-  const total = k.visited || 1
-  document.getElementById('breakdownTotal').textContent = total + ' total'
-  const segments = [
-    { val: k.onboarded, color: '#1D9E75' },
-    { val: k.open, color: '#EF9F27' },
-    { val: k.closed, color: '#888780' },
-    { val: k.doesnt, color: '#E24B4A' }
-  ]
-  document.getElementById('statusBarTrack').innerHTML = segments.map(s =>
-    `<div class="status-bar-seg" style="width:${(s.val/total*100).toFixed(1)}%;background:${s.color}"></div>`
-  ).join('')
-  const labels = ['Onboarded','Open','Closed',"Doesn't Exist"]
-  const colors = ['#1D9E75','#EF9F27','#888780','#E24B4A']
-  const vals = [k.onboarded, k.open, k.closed, k.doesnt]
-  document.getElementById('statusLegend').innerHTML = labels.map((l,i) =>
-    `<div class="status-legend-item"><div class="legend-dot" style="background:${colors[i]}"></div>${l} <strong>${vals[i]}</strong></div>`
-  ).join('')
-}
-
-function renderPartyTypeBreakdown() {
-  const newCount = filteredData.filter(r => r.party_type === 'New').length
-  const exCount = filteredData.filter(r => r.party_type === 'Existing').length
-  const total = (newCount + exCount) || 1
-  document.getElementById('partyTypeBar').innerHTML =
-    `<div class="status-bar-seg" style="width:${(newCount/total*100).toFixed(1)}%;background:#0F6E56"></div>
-     <div class="status-bar-seg" style="width:${(exCount/total*100).toFixed(1)}%;background:#378ADD"></div>`
-  document.getElementById('partyTypeLegend').innerHTML =
-    `<div class="status-legend-item"><div class="legend-dot" style="background:#0F6E56"></div>New <strong>${newCount}</strong></div>
-     <div class="status-legend-item"><div class="legend-dot" style="background:#378ADD"></div>Existing <strong>${exCount}</strong></div>`
-}
-
-// === VILLAGE TYPE GRID ===
-function renderVtypeGrid() {
-  const types = ['DHQ','P1','P2']
-  const grid = document.getElementById('vtypeGrid')
-  grid.innerHTML = types.map(t => {
-    const rows = filteredData.filter(r => r.village_type === t)
-    const k = kpiCalc(rows)
-    return `<div class="vtype-card">
-      <div class="vtype-header"><span class="vtype-title">${t}</span><span class="vtype-total">${k.visited} visits</span></div>
-      <div class="vtype-stats">
-        <div class="vtype-stat"><div class="vtype-stat-label">Onboarded</div><div class="vtype-stat-value" style="color:#0F6E56">${k.onboarded}</div></div>
-        <div class="vtype-stat"><div class="vtype-stat-label">Open</div><div class="vtype-stat-value" style="color:#BA7517">${k.open}</div></div>
-        <div class="vtype-stat"><div class="vtype-stat-label">Closed</div><div class="vtype-stat-value" style="color:#5F5E5A">${k.closed}</div></div>
-        <div class="vtype-stat"><div class="vtype-stat-label">Conv %</div><div class="vtype-stat-value" style="color:#185FA5">${k.conv}%</div></div>
+function renderVtc(){
+  const types=detectVtypes()
+  document.getElementById('vtcRow').innerHTML=types.map(vt=>{
+    const parties=assignedParties.filter(p=>(activeState==='ALL'||p.state===activeState)&&p.village_type===vt)
+    const townsInVt=new Set(parties.map(p=>`${p.state}|${p.district}|${p.town}`))
+    const submittedIds=new Set(filteredData.filter(r=>r.party_id).map(r=>r.party_id))
+    const partiesByTown={};parties.forEach(p=>{const k=`${p.state}|${p.district}|${p.town}`;(partiesByTown[k]=partiesByTown[k]||[]).push(p)})
+    let started=0,completed=0
+    Object.values(partiesByTown).forEach(ps=>{if(ps.some(p=>submittedIds.has(p.party_id)))started++;if(ps.every(p=>submittedIds.has(p.party_id)))completed++})
+    const rows=filteredData.filter(r=>r.village_type===vt)
+    const k=kpiCalc(rows)
+    return `<div class="vtc-card ${vtCls(vt)}">
+      <div class="vtc-name">${vt} TOWNS</div>
+      <div class="vtc-grid">
+        <div class="vtc-cell"><div class="vtc-num">${townsInVt.size.toLocaleString()}</div><div class="vtc-lbl">Total</div></div>
+        <div class="vtc-cell"><div class="vtc-num">${started}</div><div class="vtc-lbl">Audit Started</div></div>
+        <div class="vtc-cell"><div class="vtc-num">${completed}</div><div class="vtc-lbl">Audit Completed</div></div>
+        <div class="vtc-cell"><div class="vtc-num">${k.visited}</div><div class="vtc-lbl">Total Party Visited</div></div>
+        <div class="vtc-cell"><div class="vtc-num">${k.open}</div><div class="vtc-lbl">Open</div></div>
+        <div class="vtc-cell"><div class="vtc-num">${k.onboarded}</div><div class="vtc-lbl">Onboarded</div></div>
+        <div class="vtc-cell" style="grid-column:1/-1"><div class="vtc-num green">${k.conv}%</div><div class="vtc-lbl">Conversion %</div></div>
       </div>
     </div>`
-  }).join('')
+  }).join('')||'<div class="empty">Upload data in admin</div>'
 }
 
-// === MAP ===
-const statusColors = {
-  'Onboarded': '#1D9E75',
-  'Open': '#EF9F27',
-  'Closed': '#888780',
-  "Doesn't Exist": '#E24B4A'
+function renderHierarchy(){
+  const s=document.getElementById('hierarchySearch').value.toLowerCase()
+  const rows=filteredData.filter(r=>!s||[r.district,r.tehsil,r.town].some(v=>v?.toLowerCase().includes(s)))
+  const grps={};rows.forEach(r=>{const k=`${r.district}|${r.tehsil}|${r.town}`;if(!grps[k])grps[k]={district:r.district,tehsil:r.tehsil,town:r.town,type:r.village_type,rows:[]};grps[k].rows.push(r)})
+  const sorted=Object.values(grps).sort((a,b)=>(a.district+a.tehsil+a.town).localeCompare(b.district+b.tehsil+b.town))
+  document.getElementById('hierarchyBody').innerHTML=sorted.length?sorted.map(g=>{const k=kpiCalc(g.rows);return `<tr><td>${g.district||'—'}</td><td>${g.tehsil||'—'}</td><td>${g.town||'—'}</td><td>${g.type||'—'}</td><td>${k.visited}</td><td>${k.onboarded}</td><td>${k.open}</td><td class="conv">${k.conv}%</td></tr>`}).join(''):'<tr><td colspan="8" class="empty">No data</td></tr>'
 }
 
-function renderMap() {
-  const pts = filteredData.filter(r => r.latitude && r.longitude)
-  document.getElementById('mapCount').textContent = pts.length + ' geotagged visits'
+function renderDwChart(){
+  const byDate={}
+  filteredData.forEach(r=>{if(!r.submission_time)return;const d=r.submission_time.substring(0,10);if(!byDate[d])byDate[d]={visited:0,open:0,onboarded:0};byDate[d].visited++;if(r.status==='Open')byDate[d].open++;if(r.status==='Onboarded')byDate[d].onboarded++})
+  const dates=Object.keys(byDate).sort()
+  const labels=dates.map(d=>{const dt=new Date(d);return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'})})
+  const visited=dates.map(d=>byDate[d].visited)
+  const open=dates.map(d=>byDate[d].open)
+  const onboarded=dates.map(d=>byDate[d].onboarded)
+  const ctx=document.getElementById('dwChart').getContext('2d')
+  if(dwChart)dwChart.destroy()
+  dwChart=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Total Visited - Bar',data:visited,backgroundColor:'rgba(200,200,200,0.5)',borderColor:'#999',order:2,type:'bar'},
+      {label:'Visited Trend',data:visited,borderColor:'#E63946',backgroundColor:'#E63946',type:'line',order:1,tension:0.3,pointRadius:4},
+      {label:'Open Trend',data:open,borderColor:'#3B6BE0',backgroundColor:'#3B6BE0',type:'line',order:1,tension:0.3,pointRadius:4},
+      {label:'Onboarded Trend',data:onboarded,borderColor:'#25A660',backgroundColor:'#25A660',type:'line',order:1,tension:0.3,pointRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true,title:{display:true,text:'Count'}},x:{ticks:{maxRotation:60,minRotation:45}}}}
+  })
+}
 
-  if (!map) {
-    map = L.map('mapContainer', { scrollWheelZoom: false })
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19
-    }).addTo(map)
-    markerLayer = L.layerGroup().addTo(map)
-    map.setView([26.8467, 80.9462], 6) // default center: UP
-  }
+function renderKPIs(prefix,rows){
+  const k=kpiCalc(rows)
+  document.getElementById(prefix+'-visited').textContent=k.visited.toLocaleString()
+  document.getElementById(prefix+'-open').textContent=k.open.toLocaleString()
+  document.getElementById(prefix+'-onboarded').textContent=k.onboarded.toLocaleString()
+  document.getElementById(prefix+'-conv').textContent=k.conv+'%'
+  document.getElementById(prefix+'-closed').textContent=k.closed.toLocaleString()
+  document.getElementById(prefix+'-doesnt').textContent=k.doesnt.toLocaleString()
+}
 
+function renderSplit(bodyId,rows){
+  const mkRow=t=>{const r=rows.filter(x=>x.party_type===t);const k=kpiCalc(r);return `<tr><td>${t}</td><td>${k.visited}</td><td>${k.open}</td><td>${k.onboarded}</td><td class="conv">${k.conv}%</td><td>${k.closed}</td><td>${k.doesnt}</td></tr>`}
+  const kAll=kpiCalc(rows)
+  document.getElementById(bodyId).innerHTML=mkRow('Existing')+mkRow('New')+`<tr class="total-row"><td>Total</td><td>${kAll.visited}</td><td>${kAll.open}</td><td>${kAll.onboarded}</td><td class="conv">${kAll.conv}%</td><td>${kAll.closed}</td><td>${kAll.doesnt}</td></tr>`
+}
+
+function renderTeamTable(bodyId,src){
+  const groups={}
+  src.forEach(r=>{const key=(r.salesman||r.agent_name||'—')+'|'+(r.party_type||'—');if(!groups[key])groups[key]={team:r.salesman||r.agent_name||'—',ptype:r.party_type||'—',rows:[]};groups[key].rows.push(r)})
+  const sorted=Object.values(groups).sort((a,b)=>a.team.localeCompare(b.team))
+  document.getElementById(bodyId).innerHTML=sorted.length?sorted.map(g=>{const k=kpiCalc(g.rows);const pillCls=g.ptype==='New'?'new':'existing';return `<tr><td>${g.team}</td><td><span class="ptype-pill ${pillCls}">${g.ptype}</span></td><td>${k.visited}</td><td>${k.open}</td><td>${k.onboarded}</td><td class="conv">${k.conv}%</td><td>${k.closed}</td><td>${k.doesnt}</td></tr>`}).join(''):'<tr><td colspan="8" class="empty">No data</td></tr>'
+}
+
+function renderDistrictTable(bodyId,src){
+  const ds=[...new Set(src.map(r=>r.district).filter(Boolean))].sort()
+  document.getElementById(bodyId).innerHTML=ds.length?ds.map(d=>{const rows=src.filter(r=>r.district===d);const k=kpiCalc(rows);return `<tr><td>${d}</td><td>${k.visited}</td><td>${k.open}</td><td>${k.onboarded}</td><td class="conv">${k.conv}%</td><td>${k.closed}</td><td>${k.doesnt}</td></tr>`}).join(''):'<tr><td colspan="7" class="empty">No data</td></tr>'
+}
+
+const statusColors={'Onboarded':'#25A660','Open':'#F98E30','Closed':'#888780',"Doesn't Exist":'#E63946','Not Available':'#E63946'}
+function renderMap(){
+  const pts=filteredData.filter(r=>r.latitude&&r.longitude)
+  document.getElementById('mapCount').textContent=`${pts.length} geotagged · ${pts.filter(r=>r.location_flag==='far').length} flagged`
+  if(!map){map=L.map('mapContainer',{scrollWheelZoom:false});L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);markerLayer=L.layerGroup().addTo(map);map.setView([26.15,85.9],7)}
   markerLayer.clearLayers()
-
-  if (pts.length === 0) return
-
-  pts.forEach(r => {
-    const color = statusColors[r.status] || '#888780'
-    const isFlagged = r.location_flag === 'far'
-    const marker = L.circleMarker([r.latitude, r.longitude], {
-      radius: isFlagged ? 9 : 7,
-      fillColor: color,
-      color: isFlagged ? '#E24B4A' : '#fff',
-      weight: isFlagged ? 3 : 2,
-      fillOpacity: 0.9
-    })
-    const popupHtml = `
-      <b>${r.party_name || 'Unnamed'}</b><br>
-      ${r.status || ''}<br>
-      ${[r.town, r.district, r.state].filter(Boolean).join(', ')}<br>
-      ${r.agent_name ? 'Agent: ' + r.agent_name + '<br>' : ''}
-      ${isFlagged ? `<span style="color:#A32D2D">⚠ ${r.distance_from_centre ? r.distance_from_centre.toFixed(1)+' km from town centre' : 'Flagged far'}</span><br>` : ''}
-      ${r.submission_time ? new Date(r.submission_time).toLocaleString() : ''}
-    `
-    marker.bindPopup(popupHtml)
-    marker.on('click', () => { window._partyRows = window._partyRows||{}; window._partyRows[r.id]=r })
-    marker.on('dblclick', () => openDetail(r.id))
-    markerLayer.addLayer(marker)
-  })
-
-  // Fit bounds to markers
-  const bounds = L.latLngBounds(pts.map(r => [r.latitude, r.longitude]))
-  map.fitBounds(bounds, { padding: [30,30], maxZoom: 14 })
-}
-function switchDistrictTab(tab, el) {
-  districtTab = tab
-  document.querySelectorAll('#districtTable .tab').forEach(t => t.classList.remove('active'))
-  el.classList.add('active')
-  renderDistrictTable()
+  if(!pts.length)return
+  pts.forEach(r=>{const c=statusColors[r.status]||'#888780';const fg=r.location_flag==='far';const m=L.circleMarker([r.latitude,r.longitude],{radius:fg?9:7,fillColor:c,color:fg?'#E63946':'#fff',weight:fg?3:2,fillOpacity:0.9});m.bindPopup(`<b>${r.party_name||'—'}</b><br>${r.status||''}<br>${[r.town,r.district].filter(Boolean).join(', ')}<br>${r.salesman?'Salesman: '+r.salesman:''}`);m.on('click',()=>{window._pr=window._pr||{};window._pr[r.id]=r});m.on('dblclick',()=>openDetail(r.id));markerLayer.addLayer(m)})
+  map.fitBounds(L.latLngBounds(pts.map(r=>[r.latitude,r.longitude])),{padding:[30,30],maxZoom:12})
 }
 
-function renderDistrictTable() {
-  const src = districtTab === 'today' ? filteredData.filter(r => r.submission_time?.startsWith(today)) : filteredData
-  const districts = [...new Set(src.map(r => r.district).filter(Boolean))].sort()
-  document.getElementById('districtBody').innerHTML = districts.length ? districts.map(d => {
-    const rows = src.filter(r => r.district === d)
-    const k = kpiCalc(rows)
-    const pctClass = k.conv >= 30 ? 'pct-cell' : k.conv >= 15 ? 'pct-cell warn' : 'pct-cell low'
-    return `<tr><td>${d}</td><td class="num">${k.visited}</td><td class="num">${k.onboarded}</td><td class="num ${pctClass}">${k.conv}%</td></tr>`
-  }).join('') : '<tr><td colspan="4" class="empty">No data</td></tr>'
+function classify(subs){if(!subs.length)return'notVisited';if(subs.some(s=>s.status==='Onboarded'))return'onboarded';if(subs.some(s=>s.status==='Open'))return'openNotOnboarded';return'visitedNoOpen'}
+function getTownStats(){const t={};assignedParties.forEach(p=>{if(activeState!=='ALL'&&p.state!==activeState)return;if(activeVtype!=='ALL'&&p.village_type!==activeVtype)return;const k=`${p.state}|${p.district}|${p.tehsil||''}|${p.town}|${p.cid}`;if(!t[k])t[k]={state:p.state,district:p.district,tehsil:p.tehsil,town:p.town,cid:p.cid,vtype:p.village_type,parties:[],subs:[]};t[k].parties.push(p)});const idm={};Object.entries(t).forEach(([k,tt])=>tt.parties.forEach(p=>idm[p.party_id]=k));filteredData.forEach(s=>{if(s.party_id&&idm[s.party_id])t[idm[s.party_id]].subs.push(s);else{const k=`${s.state}|${s.district}|${s.tehsil||''}|${s.town}|${s.cid}`;if(t[k])t[k].subs.push(s)}});return Object.values(t)}
+function renderTracker(){const towns=getTownStats();document.getElementById('ttSummary').textContent=`${towns.length} towns`;const types=detectVtypes();document.getElementById('ttSummaryGrid').innerHTML=types.map(vt=>{const vtT=towns.filter(t=>t.vtype===vt);let nv=0,ob=0,op=0,vn=0;vtT.forEach(t=>{const c=classify(t.subs);if(c==='notVisited')nv++;else if(c==='onboarded')ob++;else if(c==='openNotOnboarded')op++;else vn++});return `<div class="vtc-card ${vtCls(vt)}"><div class="vtc-name">${vt}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><div class="vtc-num" style="color:#5F5E5A">${nv}</div><div class="vtc-lbl">Not visited</div></div><div><div class="vtc-num" style="color:#25A660">${ob}</div><div class="vtc-lbl">Onboarded ≥1</div></div><div><div class="vtc-num" style="color:#F98E30">${op}</div><div class="vtc-lbl">Open, no onb.</div></div><div><div class="vtc-num" style="color:#E63946">${vn}</div><div class="vtc-lbl">Visited, no open</div></div></div></div>`}).join('')||'<div class="empty">Upload parties in admin</div>';let cnt={all:towns.length,notVisited:0,onboarded:0,openNotOnboarded:0,visitedNoOpen:0};towns.forEach(t=>{const c=classify(t.subs);if(cnt[c]!==undefined)cnt[c]++});document.getElementById('tt-all').textContent=`All ${cnt.all}`;document.getElementById('tt-nv').textContent=`Not visited ${cnt.notVisited}`;document.getElementById('tt-on').textContent=`Onboarded ≥1 ${cnt.onboarded}`;document.getElementById('tt-op').textContent=`Open, no onb. ${cnt.openNotOnboarded}`;document.getElementById('tt-vn').textContent=`Visited, no open ${cnt.visitedNoOpen}`}
+function setTtFilter(f,el){ttFilter=f;el.parentElement.querySelectorAll('.vpill').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderTownList()}
+function toggleTtSort(){ttSortBy=ttSortBy==='progress'?'name':'progress';document.getElementById('ttSortBtn').textContent='Sort: '+(ttSortBy==='progress'?'Progress ↓':'Name ↑');renderTownList()}
+function renderTownList(){const towns=getTownStats();let list=ttFilter==='all'?towns:towns.filter(t=>classify(t.subs)===ttFilter);if(ttSortBy==='progress')list.sort((a,b)=>(b.subs.length/Math.max(b.parties.length,1))-(a.subs.length/Math.max(a.parties.length,1)));else list.sort((a,b)=>(a.town||'').localeCompare(b.town||''));const tL={notVisited:'Not visited',onboarded:'Onboarded ≥1',openNotOnboarded:'Open, no onb.',visitedNoOpen:'Visited, no open'};const shown=list.slice(0,300);document.getElementById('townList').innerHTML=shown.length?shown.map(t=>{const c=classify(t.subs);const tot=t.parties.length,done=t.subs.length;const pct=tot>0?Math.round(done/tot*100):0;const barColor=c==='onboarded'?'#25A660':c==='openNotOnboarded'?'#F98E30':c==='visitedNoOpen'?'#E63946':'#25A660';const cidInfo=cidMaster.find(x=>x.cid===t.cid);const salesman=cidInfo?.salesman||'—';return `<div style="padding:16px 24px;border-bottom:1px solid #F1EFE8;cursor:pointer"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div style="flex:1"><div style="font-size:16px;font-weight:600">${t.town||'—'} <span style="font-size:12px;color:#73726C;font-weight:400">· ${t.vtype||''} · ${tL[c]}</span></div><div style="font-size:12px;color:#73726C;margin-top:3px">${t.tehsil||''} · ${t.district||''} · CID ${t.cid||''} · Salesman ${salesman}</div></div><div style="text-align:right"><div style="font-size:22px;font-weight:700;color:${barColor}">${pct}%</div><div style="font-size:11px;color:#73726C">${done} of ${tot} parties</div></div></div><div style="height:8px;background:#F1EFE8;border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${barColor}"></div></div></div>`}).join(''):'<div class="empty">No towns match</div>';document.getElementById('townCountBar').textContent=`Showing ${shown.length} of ${list.length} towns`}
+function renderCombo(){const towns=getTownStats();const tL={notVisited:'Not visited',onboarded:'Onboarded ≥1',openNotOnboarded:'Open, no onb.',visitedNoOpen:'Visited, no open'};document.getElementById('comboBody').innerHTML=towns.length?towns.map(t=>{const c=classify(t.subs);const v=t.subs.length,op=t.subs.filter(s=>s.status==='Open').length,on=t.subs.filter(s=>s.status==='Onboarded').length,cl=t.subs.filter(s=>s.status==='Closed').length;return `<tr><td>${t.district||'—'}</td><td>${t.tehsil||'—'}</td><td>${t.town||'—'}</td><td>${t.vtype||'—'}</td><td>${tL[c]}</td><td>${t.parties.length}</td><td>${v}</td><td>${op}</td><td>${on}</td><td>${cl}</td></tr>`}).join(''):'<tr><td colspan="10" class="empty">No towns</td></tr>'}
+
+function renderPartyList(){const s=document.getElementById('partySearch').value.toLowerCase();const sF=document.getElementById('partyStatusFilter').value;const tF=document.getElementById('partyTypeFilter').value;const fF=document.getElementById('partyFlagFilter')?.value||'';const rows=filteredData.filter(r=>{if(sF&&r.status!==sF)return false;if(tF&&r.party_type!==tF)return false;if(fF&&(r.location_flag||'ok')!==fF)return false;if(s&&![r.party_name,r.owner_name,r.phone,r.town].some(v=>v?.toLowerCase().includes(s)))return false;return true});const bC=x=>x==='Onboarded'?'sp-onboarded':x==='Open'?'sp-open':x==='Closed'?'sp-closed':'sp-doesnt';window._pr={};const shown=rows.slice(0,500);document.getElementById('partyTableBody').innerHTML=shown.length?shown.map(r=>{window._pr[r.id]=r;const dt=r.submission_time?new Date(r.submission_time):null;const ts=dt?dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})+' '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'—';const d=r.location_flag==='far'?`<span style="color:#E63946">⚠ ${r.distance_from_centre?r.distance_from_centre.toFixed(1)+'km':'far'}</span>`:(r.distance_from_centre!=null?r.distance_from_centre.toFixed(1)+'km':'—');return `<tr class="${r.location_flag==='far'?'flagged':''}" onclick="openDetail('${r.id}')"><td>${r.photo_url?`<img class="pt-photo" src="${r.photo_url}" loading="lazy">`:'<div class="pt-photo-empty">none</div>'}</td><td><strong>${r.party_name||'—'}</strong></td><td>${r.party_type||'—'}</td><td><span class="status-pill ${bC(r.status)}">${r.status||'—'}</span></td><td>${r.owner_name||'—'}</td><td>${r.phone||'—'}</td><td>${r.town||'—'}</td><td>${r.district||'—'}</td><td>${r.village_type||'—'}</td><td>${r.salesman||r.agent_name||'—'}</td><td>${d}</td><td>${ts}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${(r.remarks||'').replace(/"/g,'&quot;')}">${r.remarks||'—'}</td></tr>`}).join(''):'<tr><td colspan="13" class="empty">No parties match</td></tr>';document.getElementById('partyCountBar').textContent=`Showing ${shown.length} of ${rows.length} submissions`}
+
+function openDetail(id){const r=(window._pr||{})[id];if(!r)return;const bC=x=>x==='Onboarded'?'sp-onboarded':x==='Open'?'sp-open':x==='Closed'?'sp-closed':'sp-doesnt';const dt=r.submission_time?new Date(r.submission_time):null;const fmt=dt?dt.toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';const gm=(r.latitude&&r.longitude)?`https://maps.google.com/?q=${r.latitude},${r.longitude}`:null;document.getElementById('detailModal').innerHTML=`${r.photo_url?`<img class="detail-photo" src="${r.photo_url}">`:'<div class="detail-photo-empty">No photo</div>'}<div class="detail-body"><div class="detail-head"><div><div class="detail-name">${r.party_name||'—'}</div><div class="detail-sub">${[r.town,r.district,r.state].filter(Boolean).join(', ')||'—'}</div></div><button class="detail-close" onclick="closeDetail()">×</button></div><div class="detail-status-row"><span class="status-pill ${bC(r.status)}">${r.status||'—'}</span>${r.village_type?`<span class="status-pill sp-closed">${r.village_type}</span>`:''}${r.party_type?`<span class="ptype-pill ${r.party_type==='New'?'new':'existing'}">${r.party_type}</span>`:''}</div>${r.location_flag==='far'?`<div class="detail-flag">⚠ Salesman was ${r.distance_from_centre?r.distance_from_centre.toFixed(1)+' km':'far'} from town centre</div>`:''}<div class="detail-grid"><div class="detail-cell"><div class="detail-cell-label">Owner</div><div class="detail-cell-value">${r.owner_name||'—'}</div></div><div class="detail-cell"><div class="detail-cell-label">Phone</div><div class="detail-cell-value">${r.phone?`<a href="tel:${r.phone}">${r.phone}</a>`:'—'}</div></div><div class="detail-cell"><div class="detail-cell-label">Salesman</div><div class="detail-cell-value">${r.salesman||r.agent_name||'—'}</div></div><div class="detail-cell"><div class="detail-cell-label">Sales team</div><div class="detail-cell-value">${r.sales_team||'—'}</div></div><div class="detail-cell"><div class="detail-cell-label">Date & time</div><div class="detail-cell-value">${fmt}</div></div><div class="detail-cell"><div class="detail-cell-label">CID</div><div class="detail-cell-value">${r.cid||'—'}</div></div><div class="detail-cell"><div class="detail-cell-label">Tehsil</div><div class="detail-cell-value">${r.tehsil||'—'}</div></div><div class="detail-cell"><div class="detail-cell-label">Activation</div><div class="detail-cell-value">${r.estimated_activation_date||'—'}</div></div><div class="detail-cell full"><div class="detail-cell-label">GPS</div><div class="detail-cell-value">${gm?`<a href="${gm}" target="_blank">📍 ${r.latitude.toFixed(6)}, ${r.longitude.toFixed(6)} — Open in Maps</a>`:'No GPS'}</div></div></div><div class="detail-cell-label" style="margin-bottom:6px">Remarks</div><div class="detail-remarks">${r.remarks||'No remarks'}</div></div>`;document.getElementById('detailOverlay').classList.add('open')}
+function closeDetail(){document.getElementById('detailOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail()})
+
+function exportExcel(){const rows=filteredData.map(r=>({'Time':r.submission_time,'Salesman':r.salesman,'Party':r.party_name,'Type':r.party_type,'Status':r.status,'Owner':r.owner_name,'Phone':r.phone,'State':r.state,'District':r.district,'Tehsil':r.tehsil,'Town':r.town,'CID':r.cid,'Village Type':r.village_type,'Latitude':r.latitude,'Longitude':r.longitude,'Distance (km)':r.distance_from_centre,'Flag':r.location_flag,'Source':r.source,'Remarks':r.remarks}));const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Submissions');XLSX.writeFile(wb,`excel_dump_${today}.xlsx`);toast('success','Excel dump downloaded')}
+
+function generateDailyReport(){
+  const todayData=filteredData.filter(r=>r.submission_time?.startsWith(today))
+  const k=kpiCalc(todayData);const kAll=kpiCalc(filteredData)
+  const wb=XLSX.utils.book_new()
+  const summary=[['Party Onboarding — Daily Report'],['Date',new Date().toLocaleString('en-IN')],['State filter',activeState],[],['Overall metrics'],['Total Party Visited',kAll.visited],['Onboarded',kAll.onboarded],['Open',kAll.open],['Closed',kAll.closed],["Doesn't Exist",kAll.doesnt],['Conversion %',kAll.conv+'%'],[],["Today's metrics"],['Total Party Visited',k.visited],['Onboarded',k.onboarded],['Open',k.open],['Closed',k.closed],["Doesn't Exist",k.doesnt],['Conversion %',k.conv+'%']]
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(summary),'Summary')
+  const teams=[...new Set(todayData.map(r=>r.salesman||r.agent_name).filter(Boolean))]
+  const teamRows=teams.map(t=>{const rows=todayData.filter(r=>(r.salesman||r.agent_name)===t);const kk=kpiCalc(rows);return{Salesman:t,Visited:kk.visited,Onboarded:kk.onboarded,Open:kk.open,Closed:kk.closed,"Doesn't Exist":kk.doesnt,'Conv %':kk.conv+'%'}})
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(teamRows.length?teamRows:[{note:'No submissions today'}]),'Today by Salesman')
+  const dists=[...new Set(todayData.map(r=>r.district).filter(Boolean))]
+  const distRows=dists.map(d=>{const rows=todayData.filter(r=>r.district===d);const kk=kpiCalc(rows);return{District:d,Visited:kk.visited,Onboarded:kk.onboarded,Open:kk.open,Closed:kk.closed,"Doesn't Exist":kk.doesnt,'Conv %':kk.conv+'%'}})
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(distRows.length?distRows:[{note:'No submissions today'}]),'Today by District')
+  const detailRows=todayData.map(r=>({Time:r.submission_time,Salesman:r.salesman,Party:r.party_name,Type:r.party_type,Status:r.status,Owner:r.owner_name,Phone:r.phone,State:r.state,District:r.district,Town:r.town,Village:r.village_type,Distance:r.distance_from_centre,Flag:r.location_flag,Remarks:r.remarks}))
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(detailRows.length?detailRows:[{note:'No submissions today'}]),"Today's Submissions")
+  XLSX.writeFile(wb,`daily_report_${today}.xlsx`)
+  toast('success','Daily report downloaded')
 }
 
-// === TEAM TABLE ===
-function switchTeamTab(tab, el) {
-  teamTab = tab
-  document.querySelectorAll('#teamTable .tab').forEach(t => t.classList.remove('active'))
-  el.classList.add('active')
-  renderTeamTable()
-}
+function toast(type,msg){const t=document.getElementById('toast');t.className='toast '+type;t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',3000)}
 
-function renderTeamTable() {
-  const src = teamTab === 'today' ? filteredData.filter(r => r.submission_time?.startsWith(today)) : filteredData
-  const teams = [...new Set(src.map(r => r.sales_team).filter(Boolean))].sort()
-  document.getElementById('teamBody').innerHTML = teams.length ? teams.map(t => {
-    const rows = src.filter(r => r.sales_team === t)
-    const k = kpiCalc(rows)
-    const pctClass = k.conv >= 30 ? 'pct-cell' : k.conv >= 15 ? 'pct-cell warn' : 'pct-cell low'
-    return `<tr><td>${t}</td><td class="num">${k.visited}</td><td class="num">${k.onboarded}</td><td class="num ${pctClass}">${k.conv}%</td></tr>`
-  }).join('') : '<tr><td colspan="4" class="empty">No data</td></tr>'
-}
-
-// === CONFIG (auto-detect + optional override) ===
-let CONFIG = { statuses:{values:[],colors:{},onboardedValue:'Onboarded',openValue:'Open'}, villageTypes:{values:[],colors:{}}, states:{values:[]}, auditThresholds:{completedFraction:1.0} }
-
-async function loadConfig() {
-  try {
-    const res = await fetch('config/dashboard.json')
-    if (res.ok) {
-      const c = await res.json()
-      CONFIG = { ...CONFIG, ...c, statuses:{...CONFIG.statuses,...c.statuses}, villageTypes:{...CONFIG.villageTypes,...c.villageTypes} }
-    }
-  } catch(e) { /* no config = pure auto-detect */ }
-}
-
-function detectVillageTypes() {
-  const configured = (CONFIG.villageTypes.values||[]).filter(Boolean)
-  if (configured.length) return configured
-  return [...new Set([...assignedParties.map(p=>p.village_type), ...allData.map(r=>r.village_type)].filter(Boolean))].sort()
-}
-function vtypeColor(t) { return CONFIG.villageTypes.colors[t] || '#888780' }
-
-// === EXISTING VS NEW ===
-function existNewCalc(rows, type) {
-  const r = rows.filter(x => x.party_type === type)
-  const visited = r.length
-  const onboarded = r.filter(x=>x.status==='Onboarded').length
-  const open = r.filter(x=>x.status==='Open').length
-  const conv = visited>0?((onboarded/visited)*100).toFixed(1):'0.0'
-  return { visited, open, onboarded, conv }
-}
-function renderExistNew() {
-  const today = new Date().toISOString().split('T')[0]
-  const mkRows = (src) => ['Existing','New'].map(t => {
-    const k = existNewCalc(src, t)
-    return `<tr><td>${t}</td><td class="num">${k.visited}</td><td class="num">${k.open}</td><td class="num">${k.onboarded}</td><td class="num pct-cell">${k.conv}%</td></tr>`
-  }).join('')
-  document.getElementById('existNewOverallBody').innerHTML = mkRows(filteredData)
-  document.getElementById('existNewTodayBody').innerHTML = mkRows(filteredData.filter(r=>r.submission_time?.startsWith(today)))
-}
-
-// === TOWN ONBOARDING TRACKER ===
-// For each village type: classify each town into one of 4 states
-function classifyTown(townKey, partiesInTown, subsInTown) {
-  if (subsInTown.length === 0) return 'notVisited'
-  const anyOnboarded = subsInTown.some(s => s.status==='Onboarded')
-  const anyOpen = subsInTown.some(s => s.status==='Open')
-  if (anyOnboarded) return 'onboarded'
-  if (anyOpen) return 'openNotOnboarded'
-  return 'visitedNoOpen'
-}
-
-function getTownStats() {
-  // group assigned parties by town (district|tehsil|town)
-  const towns = {}
-  assignedParties.forEach(p => {
-    const key = `${p.state}|${p.district}|${p.town}`
-    if (activeState!=='ALL' && p.state!==activeState) return
-    if (activeVtype!=='ALL' && p.village_type!==activeVtype) return
-    if (!towns[key]) towns[key] = { state:p.state, district:p.district, tehsil:p.tehsil, town:p.town, vtype:p.village_type, parties:[], subs:[] }
-    towns[key].parties.push(p)
-  })
-  // attach submissions by town name match
-  filteredData.forEach(s => {
-    const key = `${s.state}|${s.district}|${s.town}`
-    if (towns[key]) towns[key].subs.push(s)
-  })
-  return towns
-}
-
-function renderTownTracker() {
-  const vtypes = detectVillageTypes()
-  const towns = Object.values(getTownStats())
-  const grid = document.getElementById('townTrackerGrid')
-  grid.innerHTML = vtypes.map(vt => {
-    const vtTowns = towns.filter(t => t.vtype===vt)
-    let nv=0,ob=0,op=0,vn=0
-    vtTowns.forEach(t => {
-      const c = classifyTown(t.town, t.parties, t.subs)
-      if (c==='notVisited')nv++; else if(c==='onboarded')ob++; else if(c==='openNotOnboarded')op++; else vn++
-    })
-    return `<div class="vtype-card">
-      <div class="vtype-header"><span class="vtype-title" style="color:${vtypeColor(vt)}">${vt}</span><span class="vtype-total">${vtTowns.length} towns</span></div>
-      <div class="vtype-stats">
-        <div class="vtype-stat"><div class="vtype-stat-label">Not visited</div><div class="vtype-stat-value" style="color:#888780">${nv}</div></div>
-        <div class="vtype-stat"><div class="vtype-stat-label">Onboarded ≥1</div><div class="vtype-stat-value" style="color:#0F6E56">${ob}</div></div>
-        <div class="vtype-stat"><div class="vtype-stat-label">Open, none onb.</div><div class="vtype-stat-value" style="color:#BA7517">${op}</div></div>
-        <div class="vtype-stat"><div class="vtype-stat-label">Visited, no open</div><div class="vtype-stat-value" style="color:#A32D2D">${vn}</div></div>
-      </div>
-    </div>`
-  }).join('') || '<div class="empty">No assigned parties loaded yet</div>'
-}
-
-// === TOWN COMBO STATUS TABLE ===
-function renderComboTable() {
-  const search = (document.getElementById('comboSearch')?.value||'').toLowerCase()
-  const towns = Object.values(getTownStats())
-  const trackerLabel = { notVisited:'Not visited', onboarded:'Onboarded ≥1', openNotOnboarded:'Open, none onboarded', visitedNoOpen:'Visited, no open' }
-  const trackerColor = { notVisited:'#888780', onboarded:'#0F6E56', openNotOnboarded:'#BA7517', visitedNoOpen:'#A32D2D' }
-  let rows = towns
-  if (search) rows = rows.filter(t => [t.town,t.tehsil,t.district].some(v=>v?.toLowerCase().includes(search)))
-  rows.sort((a,b)=>(`${a.district}${a.tehsil}${a.town}`).localeCompare(`${b.district}${b.tehsil}${b.town}`))
-  document.getElementById('comboBody').innerHTML = rows.length ? rows.map(t => {
-    const cls = classifyTown(t.town, t.parties, t.subs)
-    const visited = t.subs.length
-    const open = t.subs.filter(s=>s.status==='Open').length
-    const onb = t.subs.filter(s=>s.status==='Onboarded').length
-    const closed = t.subs.filter(s=>s.status==='Closed').length
-    return `<tr>
-      <td>${t.district||'—'}</td><td>${t.tehsil||'—'}</td><td>${t.town||'—'}</td>
-      <td><span class="status-badge" style="background:#F1EFE8;color:#5F5E5A">${t.vtype||'—'}</span></td>
-      <td><span class="status-badge" style="background:${trackerColor[cls]}22;color:${trackerColor[cls]}">${trackerLabel[cls]}</span></td>
-      <td class="num">${t.parties.length}</td><td class="num">${visited}</td><td class="num">${open}</td><td class="num">${onb}</td><td class="num">${closed}</td>
-    </tr>`
-  }).join('') : '<tr><td colspan="10" class="empty">No towns match</td></tr>'
-}
-
-// === HIERARCHY TABLE ===
-function renderHierarchy() {
-  const search = document.getElementById('hierarchySearch').value.toLowerCase()
-  const rows = filteredData.filter(r => {
-    if (!search) return true
-    return [r.district, r.tehsil, r.town].some(v => v?.toLowerCase().includes(search))
-  })
-  const groups = {}
-  rows.forEach(r => {
-    const key = `${r.district}|${r.tehsil}|${r.town}`
-    if (!groups[key]) groups[key] = { district: r.district, tehsil: r.tehsil, town: r.town, type: r.village_type, rows: [] }
-    groups[key].rows.push(r)
-  })
-  const sorted = Object.values(groups).sort((a,b) => (a.district+a.tehsil+a.town).localeCompare(b.district+b.tehsil+b.town))
-  document.getElementById('hierarchyBody').innerHTML = sorted.length ? sorted.map(g => {
-    const k = kpiCalc(g.rows)
-    const pctClass = k.conv >= 30 ? 'pct-cell' : k.conv >= 15 ? 'pct-cell warn' : 'pct-cell low'
-    return `<tr>
-      <td>${g.district||'—'}</td><td>${g.tehsil||'—'}</td><td>${g.town||'—'}</td>
-      <td><span class="status-badge" style="background:#F1EFE8;color:#5F5E5A">${g.type||'—'}</span></td>
-      <td class="num">${k.visited}</td><td class="num">${k.onboarded}</td><td class="num">${k.open}</td>
-      <td class="num ${pctClass}">${k.conv}%</td>
-    </tr>`
-  }).join('') : '<tr><td colspan="8" class="empty">No data</td></tr>'
-}
-
-// === PARTY LIST ===
-function renderPartyList() {
-  const search = document.getElementById('partySearch').value.toLowerCase()
-  const statusF = document.getElementById('partyStatusFilter').value
-  const typeF = document.getElementById('partyTypeFilter').value
-  const flagF = document.getElementById('partyFlagFilter')?.value || ''
-  const rows = filteredData.filter(r => {
-    if (statusF && r.status !== statusF) return false
-    if (typeF && r.party_type !== typeF) return false
-    if (flagF && (r.location_flag||'ok') !== flagF) return false
-    if (search && ![r.party_name, r.owner_name, r.phone, r.town].some(v => v?.toLowerCase().includes(search))) return false
-    return true
-  })
-  const badgeClass = s => s === 'Onboarded' ? 'badge-onboarded' : s === 'Open' ? 'badge-open' : s === 'Closed' ? 'badge-closed' : 'badge-doesnt'
-  window._partyRows = {}
-  const shown = rows.slice(0, 500)
-  document.getElementById('partyTableBody').innerHTML = shown.length ? shown.map(r => {
-    window._partyRows[r.id] = r
-    const dt = r.submission_time ? new Date(r.submission_time) : null
-    const timeStr = dt ? dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})+' '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : '—'
-    const dist = r.location_flag==='far'
-      ? `<span style="color:#A32D2D">⚠ ${r.distance_from_centre?r.distance_from_centre.toFixed(1)+'km':'far'}</span>`
-      : (r.distance_from_centre!=null?r.distance_from_centre.toFixed(1)+'km':'—')
-    return `<tr onclick="openDetail('${r.id}')">
-      <td>${r.photo_url?`<img class="pt-photo" src="${r.photo_url}" loading="lazy">`:`<div class="pt-photo-empty">none</div>`}</td>
-      <td><strong>${r.party_name||'—'}</strong></td>
-      <td>${r.party_type||'—'}${r.source==='new'?' <span style="color:#534AB7">(new)</span>':''}</td>
-      <td><span class="status-badge ${badgeClass(r.status)}">${r.status||'—'}</span></td>
-      <td>${r.owner_name||'—'}</td>
-      <td>${r.phone||'—'}</td>
-      <td>${r.town||'—'}</td>
-      <td>${r.district||'—'}</td>
-      <td>${r.village_type||'—'}</td>
-      <td>${r.salesman||r.agent_name||'—'}</td>
-      <td>${dist}</td>
-      <td>${timeStr}</td>
-      <td class="pt-remarks" title="${(r.remarks||'').replace(/"/g,'&quot;')}">${r.remarks||'—'}</td>
-    </tr>`
-  }).join('') : '<tr><td colspan="13" class="empty">No parties match the filter</td></tr>'
-  document.getElementById('partyCountBar').textContent = `Showing ${shown.length} of ${rows.length} submissions${rows.length>500?' (first 500 — use filters to narrow)':''}`
-}
-
-// === STORE DETAIL MODAL ===
-function openDetail(id) {
-  const r = (window._partyRows||{})[id]
-  if (!r) return
-  const badgeClass = s => s === 'Onboarded' ? 'badge-onboarded' : s === 'Open' ? 'badge-open' : s === 'Closed' ? 'badge-closed' : 'badge-doesnt'
-  const dt = r.submission_time ? new Date(r.submission_time) : null
-  const fmtDate = dt ? dt.toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—'
-  const gmaps = (r.latitude && r.longitude) ? `https://maps.google.com/?q=${r.latitude},${r.longitude}` : null
-
-  document.getElementById('detailModal').innerHTML = `
-    ${r.photo_url
-      ? `<img class="detail-photo" src="${r.photo_url}" alt="${r.party_name||''}">`
-      : `<div class="detail-photo-empty">No photo captured</div>`}
-    <div class="detail-body">
-      <div class="detail-head">
-        <div>
-          <div class="detail-name">${r.party_name||'—'}</div>
-          <div class="detail-sub">${[r.town, r.district, r.state].filter(Boolean).join(', ')||'—'}</div>
-        </div>
-        <button class="detail-close" onclick="closeDetail()">×</button>
-      </div>
-      <div class="detail-status-row">
-        <span class="status-badge ${badgeClass(r.status)}">${r.status||'—'}</span>
-        ${r.village_type?`<span class="status-badge" style="background:#F1EFE8;color:#5F5E5A">${r.village_type}</span>`:''}
-        ${r.party_type?`<span class="status-badge" style="background:#EEEDFE;color:#3C3489">${r.party_type}</span>`:''}
-        ${r.source==='new'?`<span class="status-badge" style="background:#EEEDFE;color:#534AB7">New party</span>`:''}
-      </div>
-      ${r.location_flag==='far'?`<div class="detail-flag">⚠ Flagged: salesman was ${r.distance_from_centre?r.distance_from_centre.toFixed(1)+' km':'far'} from town centre at submission</div>`:''}
-      <div class="detail-grid">
-        <div class="detail-cell"><div class="detail-cell-label">Owner</div><div class="detail-cell-value">${r.owner_name||'—'}</div></div>
-        <div class="detail-cell"><div class="detail-cell-label">Phone</div><div class="detail-cell-value">${r.phone?`<a href="tel:${r.phone}">${r.phone}</a>`:'—'}</div></div>
-        <div class="detail-cell"><div class="detail-cell-label">Salesman</div><div class="detail-cell-value">${r.salesman||r.agent_name||'—'}</div></div>
-        <div class="detail-cell"><div class="detail-cell-label">Sales team</div><div class="detail-cell-value">${r.sales_team||'—'}</div></div>
-        <div class="detail-cell"><div class="detail-cell-label">Date & time</div><div class="detail-cell-value">${fmtDate}</div></div>
-        <div class="detail-cell"><div class="detail-cell-label">CID / Town code</div><div class="detail-cell-value">${r.cid||'—'}</div></div>
-        <div class="detail-cell"><div class="detail-cell-label">Tehsil</div><div class="detail-cell-value">${r.tehsil||'—'}</div></div>
-        <div class="detail-cell"><div class="detail-cell-label">Activation date</div><div class="detail-cell-value">${r.estimated_activation_date||'—'}</div></div>
-        <div class="detail-cell full"><div class="detail-cell-label">GPS coordinates (from camera)</div><div class="detail-cell-value">${gmaps?`<a href="${gmaps}" target="_blank">📍 ${r.latitude.toFixed(6)}, ${r.longitude.toFixed(6)} — open in Maps</a>`:'No GPS recorded'}</div></div>
-      </div>
-      <div class="detail-cell-label" style="margin-bottom:6px">Remarks</div>
-      <div class="detail-remarks">${r.remarks||'No remarks entered'}</div>
-    </div>
-  `
-  document.getElementById('detailOverlay').classList.add('open')
-}
-function closeDetail() { document.getElementById('detailOverlay').classList.remove('open') }
-document.addEventListener('keydown', e => { if(e.key==='Escape') closeDetail() })
-
-// === EXCEL EXPORT ===
-function exportExcel() {
-  const rows = filteredData.map(r => ({
-    'Submission Time': r.submission_time,
-    'Agent': r.agent_name,
-    'Party Name': r.party_name,
-    'Party Type': r.party_type,
-    'RTR ID': r.rtr_id,
-    'Status': r.status,
-    'Owner': r.owner_name,
-    'Phone': r.phone,
-    'State': r.state,
-    'District': r.district,
-    'Tehsil': r.tehsil,
-    'Town': r.town,
-    'Village Type': r.village_type,
-    'Sales Team': r.sales_team,
-    'Outlet Universe': r.estimated_outlet_universe,
-    'Activation Date': r.estimated_activation_date,
-    'Latitude': r.latitude,
-    'Longitude': r.longitude,
-    'Remarks': r.remarks
-  }))
-  const ws = XLSX.utils.json_to_sheet(rows)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Submissions')
-  XLSX.writeFile(wb, `party_onboarding_${today}.xlsx`)
-}
-
-// === INIT ===
-loadConfig().then(loadData)
-setInterval(loadData, 120000) // auto-refresh every 2 minutes
+loadData()
+setInterval(loadData,120000)
 </script>
 </body>
 </html>
